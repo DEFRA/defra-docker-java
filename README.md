@@ -28,7 +28,7 @@ The image includes the certificate for the internal [CA](https://en.wikipedia.or
 
 Images should be tagged according to the Dockerfile version and the version of Java on which the image is based. For example, for Dockerfile version `1.0.0` based on Java `11.0.12-slim`, the built image would be tagged `1.0.0-java11.0.12-slim`.
 
-Other tags are also pushed, e.g. `8` & `11` to allow pointing at the latest image for that sdk version, together with `latest`.
+Other tags are also pushed, e.g. `jdk-8` & `jre-11` to allow pointing at the latest image for that sdk version, together with `latest`.
 
 ## TODO: Example files
 

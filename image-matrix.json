@@ -1,4 +1,6 @@
  [
-    {"runtimeVersion": "8u302-slim", "latestTags": ["8"]},
-    {"runtimeVersion": "11.0.12-slim", "latestTags": ["latest", "11"]}
+    {"runtimeVersion": "8u302-jre-slim", "latestTags": ["jre-8"]},
+    {"runtimeVersion": "8u302-slim", "latestTags": ["jdk-8"]},
+    {"runtimeVersion": "11.0.12-jre-slim", "latestTags": ["latest", "latest-jre", "jre-11"]},
+    {"runtimeVersion": "11.0.12-slim", "latestTags": ["latest-jdk", "jdk-11"]}
 ]
