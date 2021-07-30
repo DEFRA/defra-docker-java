@@ -9,17 +9,14 @@ The following table lists the versions of Java available, and the parent Java im
 | 8u302         | openjdk:8u302-slim   |
 | 11.0.12       | openjdk:11.0.12-slim |
 
-It is recommended that services use [multi-stage builds](https://docs.docker.com/develop/develop-images/multistage-build) to produce production and development images, each extending the appropriate parent, from a single Dockerfile.
-
 TODO: [Examples](./example) are provided to show how parent images can be extended for different types of services. These should be a good starting point for building Java services conforming to Defra standards.
 
 ## Building images locally
 
 To build the images locally, run:
 ```
-docker build . --no-cache --target <target>
+docker build . --no-cache
 ```
-(where `<target>` is either `development` or `production`).
 
 This will build an image using the default `BASE_VERSION` as set in the [Dockerfile](Dockerfile).
 
@@ -39,7 +36,7 @@ Images should be tagged according to the Dockerfile version and the version of J
 
 ## CI/CD
 
-On commit GitHub Actions will build the `java` & `java-development` images for the Java versions listed in the [image-matrix.json](image-matrix.json) file, and perform a vulnerability scan, as described below.
+On commit GitHub Actions will build the `java` image for the Java versions listed in the [image-matrix.json](image-matrix.json) file, and perform a vulnerability scan, as described below.
 
 In addition a commit to the master branch will push the images to the [defradigital](https://hub.docker.com/u/defradigital) organisation in Docker Hub using the version tag specified in the [JOB.env](JOB.env) file. This version tag is expected to be manually updated on each release.
 

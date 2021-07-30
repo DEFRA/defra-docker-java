@@ -23,7 +23,7 @@ jobs:
     needs:  get-matrix-values
     strategy:
       matrix:
-        target: ["development", "production"]
+        target: ["production"]
         image: ${{fromJSON(needs.get-matrix-values.outputs.image)}}
     steps:
       - uses: actions/checkout@v2
