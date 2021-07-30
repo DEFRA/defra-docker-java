@@ -45,21 +45,13 @@ jobs:
           echo "::set-output name=dockerRepoName::$DOCKER_REPO_NAME"
           echo "::set-output name=fullImageName::$DOCKER_REPO_NAME:$DEFRA_VERSION-java${{matrix.image.runTimeVersion}}"
 
-          if [ ${{matrix.image.latest}} = true ]
-          then 
-            echo "::set-output name=latestTag::--tag $DOCKER_REPO_NAME:latest"
-          else
-            echo "::set-output name=latestTag:: "
-          fi
-
       - name: Build the Docker image
         run: |
           docker build . --file Dockerfile --no-cache \
           --target=${{matrix.target}} \
           --build-arg DEFRA_VERSION=$DEFRA_VERSION \
           --build-arg BASE_VERSION=${{matrix.image.runtimeVersion}}  \
-          --tag ${{steps.setImageDetails.outputs.fullImageName}} \
-          ${{steps.setImageDetails.outputs.latestTag}}
+          --tag ${{steps.setImageDetails.outputs.fullImageName}}
           docker images
 
       - name: run anchore engine scan
@@ -67,6 +59,15 @@ jobs:
         run: |
           curl -s https://ci-tools.anchore.io/inline_scan-v$ANCHORE_SCAN_VERSION | \
           bash -s -- -r -f -b ./anchore-policy.json ${{steps.setImageDetails.outputs.fullImageName}}
+
+      - name: Tag image
+        run: |
+          echo "Tags are ${{ join(matrix.image.latestTags, ' ') }}"
+          for TAG in ${{ join(matrix.image.latestTags, ' ') }}
+          do
+            echo "creating tag ${{steps.setImageDetails.outputs.dockerRepoName}}:$TAG"
+            docker image tag ${{steps.setImageDetails.outputs.fullImageName}} ${{steps.setImageDetails.outputs.dockerRepoName}}:$TAG
+          done
 
       - name: Login to DockerHub
         uses: docker/login-action@v1
@@ -80,10 +81,10 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           docker image push ${{steps.setImageDetails.outputs.fullImageName}}
-          if [ ${{matrix.image.latest}} = true ]
-          then 
-            docker image push ${{steps.setImageDetails.outputs.dockerRepoName}}:latest
-          fi
+          for TAG in ${{ join(matrix.image.latestTags, ' ') }}
+          do
+            docker image push ${{steps.setImageDetails.outputs.dockerRepoName}}:$TAG
+          done
 
       - name: Archive anchore report
         if: ${{ failure() && matrix.target == 'production' }}

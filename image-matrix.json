@@ -1,4 +1,4 @@
  [
-    {"runtimeVersion": "8u302-slim", "latest": false},
-    {"runtimeVersion": "11.0.12-slim", "latest": true}
+    {"runtimeVersion": "8u302-slim", "latestTags": ["8"]},
+    {"runtimeVersion": "11.0.12-slim", "latestTags": ["latest", "11"]}
 ]
