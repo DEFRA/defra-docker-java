@@ -5,14 +5,14 @@ The repository runs a vulnerability scan of the latest Docker hub parent image n
 
 Scheduled actions only run on the `master` repository branch so will run once, regardless of the number of branches.
 
-Both workflows read settings from the file [JOB.env](JOB.env) to ensure the same Node.js, Alpine, and Defra versions are used during the image scan.
+Both workflows read settings from the file [JOB.env](JOB.env) to ensure the same Java, Debian, and Defra versions are used during the image scan.
 
 Scans are performed by the [Anchore Engine CLI Tools](https://github.com/anchore/ci-tools) inline script using the policy file [anchore-policy.json](anchore-policy.json).
 Details on the policy configuration and exclusions can be found in [POLICY_CONFIGURATION.md](POLICY_CONFIGURATION.md).
 
 ## Addressing vulnerabilities
 
-If the Anchore scan finds a vulnerability the scan will fail and a report will be stored as an artifact against the failed GitHub [Action](https://github.com/DEFRA/defra-docker-node/actions).
+If the Anchore scan finds a vulnerability the scan will fail and a report will be stored as an artifact against the failed GitHub [Action](https://github.com/DEFRA/defra-docker-java/actions).
 
 There are two solutions to address an image vulnerability: patch the Dockerfile to upgrade the vulnerable library, or add the vulnerability to the exclusion list if deemed not exploitable.
 
@@ -75,12 +75,12 @@ Further details on `apk` syntax can be found in the [Alpine package management d
 
 First build the production image locally with a known tag as described in the [README.md](README.md), i.e.
 ```
-docker build --no-cache --tag defra-node:latest --target=production .
+docker build --no-cache --tag defra-java:latest .
 ```
 
-Scan the tagged image, i.e. `defra-node:latest`, using the Anchore hosted script and the policy file `anchore-policy.json`:
+Scan the tagged image, i.e. `defra-java:latest`, using the Anchore hosted script and the policy file `anchore-policy.json`:
 ```
-curl -s https://ci-tools.anchore.io/inline_scan-v0.9.3 | bash -s -- -r -f -b ./anchore-policy.json defra-node:latest
+curl -s https://ci-tools.anchore.io/inline_scan-v0.9.3 | bash -s -- -r -f -b ./anchore-policy.json defra-java:latest
 ```
 
 Full documentation on the inline scanning tool can be found at https://github.com/anchore/ci-tools.
