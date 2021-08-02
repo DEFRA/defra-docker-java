@@ -26,7 +26,3 @@ WORKDIR /home/jreuser
 LABEL uk.gov.defra.java.java-version=$BASE_VERSION \
       uk.gov.defra.java.version=$DEFRA_VERSION \
       uk.gov.defra.java.repository=defradigital/java
-
-FROM production AS development
-
-LABEL uk.gov.defra.java.repository=defradigital/java-development
