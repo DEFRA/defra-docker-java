@@ -62,8 +62,8 @@ jobs:
 
       - name: Tag image
         run: |
-          echo "Tags are ${{ join(matrix.image.latestTags, ' ') }}"
-          for TAG in ${{ join(matrix.image.latestTags, ' ') }}
+          echo "Tags are ${{ join(matrix.image.tags, ' ') }}"
+          for TAG in ${{ join(matrix.image.tags, ' ') }}
           do
             echo "creating tag ${{steps.setImageDetails.outputs.dockerRepoName}}:$TAG"
             docker image tag ${{steps.setImageDetails.outputs.fullImageName}} ${{steps.setImageDetails.outputs.dockerRepoName}}:$TAG
@@ -81,7 +81,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           docker image push ${{steps.setImageDetails.outputs.fullImageName}}
-          for TAG in ${{ join(matrix.image.latestTags, ' ') }}
+          for TAG in ${{ join(matrix.image.tags, ' ') }}
           do
             docker image push ${{steps.setImageDetails.outputs.dockerRepoName}}:$TAG
           done
