@@ -9,7 +9,7 @@ The following table lists the versions of Java available, and the parent Java im
 | 8u302         | openjdk:8u302-slim   |
 | 11.0.12       | openjdk:11.0.12-slim |
 
-TODO: [Examples](./example) are provided to show how parent images can be extended for different types of services. These should be a good starting point for building Java services conforming to Defra standards.
+[Examples](./example) are provided to show how parent images can be extended for different types of services. These should be a good starting point for building Java services conforming to Defra standards.
 
 ## Building images locally
 
@@ -30,11 +30,9 @@ Images should be tagged according to the Dockerfile version and the version of J
 
 Other tags are also pushed, e.g. `jdk-8` & `jre-11` to allow pointing at the latest image for that sdk version, together with `latest`.
 
-## TODO: Example files
+## Example files
 
-`Dockerfile.web` - This is an example web project, that requires a build step to create some static files that are used by the web front end.
-
-`Dockerfile.service` - This is an example project that doesn't expose any external ports (a message based service). There is also no build step in this Dockerfile.
+`Dockerfile.service` - This is an example project that runs a web service.
 
 ## CI/CD
 
