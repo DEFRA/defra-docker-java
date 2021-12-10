@@ -6,8 +6,8 @@ The following table lists the versions of Java available, and the parent Java im
 
 | Java version  | Parent image         |
 | ------------- | -------------------- |
-| 8u302         | openjdk:8u302-slim   |
-| 11.0.12       | openjdk:11.0.12-slim |
+| 8u312         | openjdk:8u312-slim   |
+| 11.0.13       | openjdk:11.0.13-slim |
 
 [Examples](./example) are provided to show how parent images can be extended for different types of services. These should be a good starting point for building Java services conforming to Defra standards.
 
