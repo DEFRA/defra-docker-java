@@ -1,5 +1,5 @@
 ARG BASE_VERSION=latest-jre
-FROM defra/java:$BASE_VERSION AS base
+FROM defradigital/java:$BASE_VERSION AS base
 
 # Specify version of our application to be packaged.
 ARG BUILD_VERSION
