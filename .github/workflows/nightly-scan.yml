@@ -29,13 +29,13 @@ jobs:
       - uses: actions/checkout@v2
       - name: Set job environment variables
         run:  cat JOB.env >> $GITHUB_ENV
-      - name: Scan image
+      - name: Scan Node.js docker image
         id: scan
         uses: anchore/scan-action@v3
-        if: ${{ matrix.target == 'production' }}
         with:
           image: defradigital/$IMAGE_NAME:$DEFRA_VERSION-java${{matrix.image.runTimeVersion}}
-      
+          fail-build: true
+          severity-cutoff: "medium"
       - name: upload Anchore scan SARIF report
         uses: github/codeql-action/upload-sarif@v1
         with:

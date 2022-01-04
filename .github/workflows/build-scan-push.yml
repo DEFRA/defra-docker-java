@@ -54,13 +54,14 @@ jobs:
           --tag ${{steps.setImageDetails.outputs.fullImageName}}
           docker images
 
-
-      - name: Scan image
+      - name: run anchore grype scan
         id: scan
-        uses: anchore/scan-action@v3
         if: ${{ matrix.target == 'production' }}
+        uses: anchore/scan-action@v3
         with:
           image: ${{steps.setImageDetails.outputs.fullImageName}}
+          fail-build: true
+          severity-cutoff: "medium"
 
       - name: Tag image
         run: |
@@ -88,7 +89,8 @@ jobs:
             docker image push ${{steps.setImageDetails.outputs.dockerRepoName}}:$TAG
           done
 
-      - name: upload Anchore scan SARIF report
+      - name: upload Anchore Grype SARIF report
+        if: ${{ failure() && matrix.target == 'production' }}
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
