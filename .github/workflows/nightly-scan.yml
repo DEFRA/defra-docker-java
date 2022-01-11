@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Set job environment variables
         run:  cat JOB.env >> $GITHUB_ENV
-      - name: Scan Node.js docker image
+      - name: Scan Java docker image
         id: scan
         uses: anchore/scan-action@v3
         with:
