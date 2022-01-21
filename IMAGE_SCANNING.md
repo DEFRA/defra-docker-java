@@ -23,26 +23,20 @@ There are two solutions to address an image vulnerability: patch the Dockerfile 
 
 ### Adding a vulnerability to the exclusion list
 
-Generally speaking the only vulnerabilities that are excluded are false positives.
-
 The scan output and the artifacts on the GitHub Action log will provide details of the type and severity of the vulnerability, along with the CVE ID of the vulnerability.
 
 To exclude the vulnerability add an item to the `.grype.yaml`'s `ignore` list. Full details on formatting the YAML can be found in the `grype` documenation under [Specifying Matches to Ignore](https://github.com/anchore/grype#specifying-matches-to-ignore).
 
 The preferred option is to specify the CVE ID, along with the type of vulnerability and the package name itself. This makes it easier to tie the reported vulnerability to the file.
 
-The example below shows the yaml to exclude the `CVE-2021-3807` vulnerability for the `npm` package `ansi-regex`, as well as the `npm` package itself as `CVE-2021-43616`:
+The example below shows the yaml to exclude the `CVE-2021-33574` vulnerability for the `deb` package `libc-bin` which upstream  has decided will not be fixed:
 ```
 ignore:
-  - vulnerability: GHSA-93q8-gq69-wqmw
-  - vulnerability: CVE-2021-3807
+  - vulnerability: CVE-2021-33574
+    type: deb
+    fix-state: wont-fix
     package:
-      type: npm
-      name: ansi-regex
-  - vulnerability:  CVE-2021-43616
-    package:
-      type: npm
-      name: npm
+      name: libc-bin
 ```
 
 Any exclusions should be recorded in the [POLICY_CONFIGURATION.md](POLICY_CONFIGURATION.md) with an explanation of why they are considered non-exploitable.
