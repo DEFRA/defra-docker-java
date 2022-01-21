@@ -54,11 +54,14 @@ jobs:
           --tag ${{steps.setImageDetails.outputs.fullImageName}}
           docker images
 
-      - name: run anchore engine scan
+      - name: run anchore grype scan
+        id: scan
         if: ${{ matrix.target == 'production' }}
-        run: |
-          curl -s https://ci-tools.anchore.io/inline_scan-v$ANCHORE_SCAN_VERSION | \
-          bash -s -- -r -f -b ./anchore-policy.json ${{steps.setImageDetails.outputs.fullImageName}}
+        uses: anchore/scan-action@v3
+        with:
+          image: ${{steps.setImageDetails.outputs.fullImageName}}
+          fail-build: true
+          severity-cutoff: "medium"
 
       - name: Tag image
         run: |
@@ -86,9 +89,9 @@ jobs:
             docker image push ${{steps.setImageDetails.outputs.dockerRepoName}}:$TAG
           done
 
-      - name: Archive anchore report
+      - name: Upload Anchore Grype SARIF report
         if: ${{ failure() && matrix.target == 'production' }}
         uses: actions/upload-artifact@v2
         with:
           name: anchore-reports-java-${{ matrix.image.runtimeVersion }}
-          path: anchore-reports
+          path: ${{ steps.scan.outputs.sarif }}

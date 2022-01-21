@@ -1,0 +1,27 @@
+ignore:
+  - vulnerability: CVE-2021-33574
+    type: deb
+    fix-state: wont-fix
+    package:
+      name: libc6
+  - vulnerability: CVE-2021-33574
+    type: deb
+    fix-state: wont-fix
+    package:
+      name: libc-bin
+  - vulnerability: CVE-2021-33560
+    type: deb
+    fix-state: wont-fix
+    package:
+      name: libgcrypt20
+  - vulnerability: CVE-2011-3389
+    type: deb
+    package:
+      name: gnutls28
+  - vulnerability: CVE-2011-3389
+    type: deb
+    package:
+      name: libgnutls30
+  - vulnerability: CVE-2020-16156
+    type: deb
+    fix-state: wont-fix
