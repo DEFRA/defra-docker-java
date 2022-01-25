@@ -4,7 +4,27 @@ ignore:
     fix-state: wont-fix
     package:
       name: libc6
+  - vulnerability: CVE-2022-23218
+    type: deb
+    fix-state: wont-fix
+    package:
+      name: libc6
+  - vulnerability: CVE-2022-23219
+    type: deb
+    fix-state: wont-fix
+    package:
+      name: libc6
   - vulnerability: CVE-2021-33574
+    type: deb
+    fix-state: wont-fix
+    package:
+      name: libc-bin
+  - vulnerability: CVE-2022-23218
+    type: deb
+    fix-state: wont-fix
+    package:
+      name: libc-bin
+  - vulnerability: CVE-2022-23219
     type: deb
     fix-state: wont-fix
     package:
