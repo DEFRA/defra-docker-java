@@ -37,10 +37,6 @@ ignore:
   - vulnerability: CVE-2011-3389
     type: deb
     package:
-      name: gnutls28
-  - vulnerability: CVE-2011-3389
-    type: deb
-    package:
       name: libgnutls30
   - vulnerability: CVE-2020-16156
     type: deb
