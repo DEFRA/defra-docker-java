@@ -37,11 +37,18 @@ ignore:
   - vulnerability: CVE-2011-3389
     type: deb
     package:
-      name: gnutls28
-  - vulnerability: CVE-2011-3389
-    type: deb
-    package:
       name: libgnutls30
   - vulnerability: CVE-2020-16156
     type: deb
     fix-state: wont-fix
+  - vulnerability: CVE-2021-3997
+    fix-state: wont-fix
+    type: deb
+    package:
+      name: libsystemd0
+  - vulnerability: CVE-2021-3997
+    fix-state: wont-fix
+    type: deb
+    package:
+      name: libudev1
+  - vulnerability: CVE-2021-4160
