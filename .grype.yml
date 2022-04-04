@@ -1,34 +1,4 @@
 ignore:
-  - vulnerability: CVE-2021-33574
-    type: deb
-    fix-state: wont-fix
-    package:
-      name: libc6
-  - vulnerability: CVE-2022-23218
-    type: deb
-    fix-state: wont-fix
-    package:
-      name: libc6
-  - vulnerability: CVE-2022-23219
-    type: deb
-    fix-state: wont-fix
-    package:
-      name: libc6
-  - vulnerability: CVE-2021-33574
-    type: deb
-    fix-state: wont-fix
-    package:
-      name: libc-bin
-  - vulnerability: CVE-2022-23218
-    type: deb
-    fix-state: wont-fix
-    package:
-      name: libc-bin
-  - vulnerability: CVE-2022-23219
-    type: deb
-    fix-state: wont-fix
-    package:
-      name: libc-bin
   - vulnerability: CVE-2021-33560
     type: deb
     fix-state: wont-fix
@@ -41,14 +11,3 @@ ignore:
   - vulnerability: CVE-2020-16156
     type: deb
     fix-state: wont-fix
-  - vulnerability: CVE-2021-3997
-    fix-state: wont-fix
-    type: deb
-    package:
-      name: libsystemd0
-  - vulnerability: CVE-2021-3997
-    fix-state: wont-fix
-    type: deb
-    package:
-      name: libudev1
-  - vulnerability: CVE-2021-4160
