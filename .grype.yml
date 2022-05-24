@@ -11,3 +11,12 @@ ignore:
   - vulnerability: CVE-2020-16156
     type: deb
     fix-state: wont-fix
+  - vulnerability: CVE-2022-1304
+    type: deb
+    fix-state: wont-fix
+  - vulnerability: CVE-2019-8457
+    type: deb
+    fix-state: wont-fix
+  - vulnerability: CVE-2022-29458
+    type: deb
+    fix-state: wont-fix
