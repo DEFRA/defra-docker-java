@@ -1,5 +1,5 @@
 # Set default values for build arguments
-ARG DEFRA_VERSION=0.2.0
+ARG DEFRA_VERSION=0.2.1
 ARG BASE_VERSION=11.0.14.1-slim
 
 FROM openjdk:$BASE_VERSION AS production
