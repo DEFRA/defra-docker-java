@@ -20,3 +20,9 @@ ignore:
   - vulnerability: CVE-2022-29458
     type: deb
     fix-state: wont-fix
+  - vulnerability: CVE-2022-1586
+    type: deb
+    fix-state: wont-fix
+  - vulnerability: CVE-2022-1587
+    type: deb
+    fix-state: wont-fix
