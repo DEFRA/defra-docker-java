@@ -4,10 +4,10 @@ This repository contains Java parent Docker image source code for Defra.
 
 The following table lists the versions of Java available, and the parent Java image they are based on:
 
-| Java version  | Parent image         |
-| ------------- | -------------------- |
-| 8u332         | openjdk:8u332-slim   |
-| 11.0.15       | openjdk:11.0.15-slim |
+| Java version  | Parent image             |
+| ------------- | ------------------------ |
+| 8             | eclipse-temurin:8-jammy  |
+| 11            | eclipse-temurin:11-jammy |
 
 [Examples](./example) are provided to show how parent images can be extended for different types of services. These should be a good starting point for building Java services conforming to Defra standards.
 

@@ -1,31 +1,13 @@
 ignore:
-  - vulnerability: CVE-2021-33560
-    type: deb
-    fix-state: wont-fix
-    package:
-      name: libgcrypt20
-  - vulnerability: CVE-2011-3389
-    type: deb
-    package:
-      name: libgnutls30
   - vulnerability: CVE-2020-16156
     type: deb
-    fix-state: wont-fix
-  - vulnerability: CVE-2022-1304
+    package:
+      name: perl-base
+  - vulnerability: CVE-2021-31879
     type: deb
-    fix-state: wont-fix
-  - vulnerability: CVE-2019-8457
+    package:
+      name: wget
+  - vulnerability: CVE-2022-37434
     type: deb
-    fix-state: wont-fix
-  - vulnerability: CVE-2022-29458
-    type: deb
-    fix-state: wont-fix
-  - vulnerability: CVE-2022-1586
-    type: deb
-    fix-state: wont-fix
-  - vulnerability: CVE-2022-1587
-    type: deb
-    fix-state: wont-fix
-  - vulnerability: CVE-2022-2097
-    type: deb
-    fix-state: wont-fix
+    package:
+      name: zlib1g

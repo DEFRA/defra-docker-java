@@ -1,6 +1,6 @@
  [
-    {"runtimeVersion": "8u342-jre-slim", "tags": ["jre-8"]},
-    {"runtimeVersion": "8u342-slim", "tags": ["jdk-8"]},
-    {"runtimeVersion": "11.0.16-jre-slim", "tags": ["latest", "latest-jre", "jre-11"]},
-    {"runtimeVersion": "11.0.16-slim", "tags": ["latest-jdk", "jdk-11"]}
+    {"runtimeVersion": "8-jammy", "tags": ["jre-8"]},
+    {"runtimeVersion": "8-jdk-jammy", "tags": ["jdk-8"]},
+    {"runtimeVersion": "11-jammy", "tags": ["latest", "latest-jre", "jre-11"]},
+    {"runtimeVersion": "11-jdk-jammy", "tags": ["latest-jdk", "jdk-11"]}
 ]

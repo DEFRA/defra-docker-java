@@ -1,8 +1,8 @@
 # Set default values for build arguments
-ARG DEFRA_VERSION=0.2.3
-ARG BASE_VERSION=11.0.16-slim
+ARG DEFRA_VERSION=1.0.0
+ARG BASE_VERSION=11-jdk-jammy
 
-FROM openjdk:$BASE_VERSION AS production
+FROM eclipse-temurin:$BASE_VERSION AS production
 
 ARG BASE_VERSION
 ARG DEFRA_VERSION
