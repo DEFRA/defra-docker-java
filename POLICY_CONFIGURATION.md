@@ -11,3 +11,5 @@ The following issues have been added to the policies exclusion list
 |[CVE-2022-42800](https://nvd.nist.gov/vuln/detail/CVE-2022-42800)| Ubuntu | [zlib1g](https://ubuntu.com/security/CVE-2022-42800) |  Ubuntu confirmed not vulnerable | Updated 2022/11/21 |
 |[CVE-2022-3715](https://nvd.nist.gov/vuln/detail/CVE-2022-3715)| Ubuntu | [bash](https://ubuntu.com/security/CVE-2022-3715) |  No details available. | Updated 2022/11/21 |
 |[CVE-2022-3821](https://nvd.nist.gov/vuln/detail/CVE-2022-3821)| Ubuntu | [systemd](https://ubuntu.com/security/CVE-2022-3821) |  No fix available as of. Do not believe services vulnerable. | Updated 2022/11/21 |
+|[CVE-2022-43551](https://nvd.nist.gov/vuln/detail/CVE-2022-43551)| Ubuntu | [curl](https://ubuntu.com/security/CVE-2022-43551) |  No fix available as of. Do not believe services vulnerable. | Updated 2023/01/03 |
+|[CVE-2022-43552](https://nvd.nist.gov/vuln/detail/CVE-2022-43552)| Ubuntu | [curl](https://ubuntu.com/security/CVE-2022-43552) |  No fix available as of. Do not believe services vulnerable. | Updated 2023/01/03 |

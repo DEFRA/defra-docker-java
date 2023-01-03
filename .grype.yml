@@ -23,3 +23,19 @@ ignore:
     type: deb
     package:
       name: libudev1
+  - vulnerability: CVE-2022-43551
+    type: deb
+    package:
+      name: curl
+  - vulnerability: CVE-2022-43552
+    type: deb
+    package:
+      name: curl
+  - vulnerability: CVE-2022-43551
+    type: deb
+    package:
+      name: libcurl4
+  - vulnerability: CVE-2022-43552
+    type: deb
+    package:
+      name: libcurl4
