@@ -3,18 +3,6 @@ ignore:
     type: deb
     package:
       name: wget
-  - vulnerability: CVE-2022-37434
-    type: deb
-    package:
-      name: zlib1g
-  - vulnerability: CVE-2022-42800
-    type: deb
-    package:
-      name: zlib1g
-  - vulnerability: CVE-2022-3715
-    type: deb
-    package:
-      name: bash
   - vulnerability: CVE-2022-3821
     type: deb
     package:
@@ -23,3 +11,19 @@ ignore:
     type: deb
     package:
       name: libudev1
+  - vulnerability: CVE-2022-43551
+    type: deb
+    package:
+      name: curl
+  - vulnerability: CVE-2022-43552
+    type: deb
+    package:
+      name: curl
+  - vulnerability: CVE-2022-43551
+    type: deb
+    package:
+      name: libcurl4
+  - vulnerability: CVE-2022-43552
+    type: deb
+    package:
+      name: libcurl4
