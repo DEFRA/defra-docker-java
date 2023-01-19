@@ -1,4 +1,4 @@
- [
+[
     {"runtimeVersion": "8-jammy", "tags": ["jre-8"]},
     {"runtimeVersion": "8-jdk-jammy", "tags": ["jdk-8"]},
     {"runtimeVersion": "11-jammy", "tags": ["latest", "latest-jre", "jre-11"]},
