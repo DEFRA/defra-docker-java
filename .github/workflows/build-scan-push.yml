@@ -60,6 +60,7 @@ jobs:
           image: ${{steps.setImageDetails.outputs.fullImageName}}
           fail-build: true
           severity-cutoff: "medium"
+          only-fixed: true
 
       - name: Tag image
         run: |
