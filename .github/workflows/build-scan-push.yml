@@ -58,9 +58,9 @@ jobs:
         uses: anchore/scan-action@v3
         with:
           image: ${{steps.setImageDetails.outputs.fullImageName}}
-          fail-build: true
+          fail-build: false
           severity-cutoff: "medium"
-          only-fixed: true
+          output-format: "sarif"
 
       - name: Tag image
         run: |
@@ -89,8 +89,11 @@ jobs:
           done
 
       - name: Upload Anchore Grype SARIF report
-        if: ${{ failure() && matrix.target == 'production' }}
-        uses: actions/upload-artifact@v2
+        if: always() && steps.scan.outputs.sarif
+        uses: github/codeql-action/upload-sarif@v2
         with:
-          name: anchore-reports-java-${{ matrix.image.runtimeVersion }}
-          path: ${{ steps.scan.outputs.sarif }}
+          sarif_file: ${{ steps.scan.outputs.sarif }}
+
+      - name: Inspect action SARIF report
+        if: always() && steps.scan.outputs.sarif
+        run: cat ${{ steps.scan.outputs.sarif }}

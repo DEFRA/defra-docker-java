@@ -21,9 +21,7 @@ There are two solutions to address an image vulnerability: patch the Dockerfile 
 
 ### Adding a vulnerability to the exclusion list
 
-### Adding a vulnerability to the exclusion list
-
-The scan output and the artifacts on the GitHub Action log will provide details of the type and severity of the vulnerability, along with the CVE ID of the vulnerability.
+The scan output and the [GitHub Security Code Scanning Center](https://github.com/DEFRA/defra-docker-java/security/code-scanning) will provide details of the type and severity of the vulnerability, along with the CVE ID of the vulnerability.
 
 To exclude the vulnerability add an item to the `.grype.yaml`'s `ignore` list. Full details on formatting the YAML can be found in the `grype` documenation under [Specifying Matches to Ignore](https://github.com/anchore/grype#specifying-matches-to-ignore).
 
