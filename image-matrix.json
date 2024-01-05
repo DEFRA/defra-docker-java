@@ -2,5 +2,7 @@
     {"runtimeVersion": "8-jammy", "tags": ["jre-8"]},
     {"runtimeVersion": "8-jdk-jammy", "tags": ["jdk-8"]},
     {"runtimeVersion": "11-jammy", "tags": ["latest", "latest-jre", "jre-11"]},
-    {"runtimeVersion": "11-jdk-jammy", "tags": ["latest-jdk", "jdk-11"]}
+    {"runtimeVersion": "11-jdk-jammy", "tags": ["latest-jdk", "jdk-11"]},
+    {"runtimeVersion": "17-jammy", "tags": ["latest", "latest-jre", "jre-17"]},
+    {"runtimeVersion": "17-jre-jammy", "tags": ["latest-jdk", "jdk-17"]}
 ]
