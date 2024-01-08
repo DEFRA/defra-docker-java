@@ -67,7 +67,7 @@ jobs:
           echo "Tags are ${{ join(matrix.image.tags, ' ') }}"
           for TAG in ${{ join(matrix.image.tags, ' ') }}
           do
-            echo "github.ref  " github.ref
+            echo "github.ref  " ${{github.ref}}
             echo "creating tag ${{steps.setImageDetails.outputs.dockerRepoName}}:$TAG"
             docker image tag ${{steps.setImageDetails.outputs.fullImageName}} ${{steps.setImageDetails.outputs.dockerRepoName}}:$TAG
           done
