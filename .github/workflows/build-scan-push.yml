@@ -81,7 +81,7 @@ jobs:
 
       - id: pushImage
         name: push docker image
-        if: github.ref == 'feature/java17image'
+        if: github.ref == 'refs/pull/23/merge'
         run: |
           docker image push ${{steps.setImageDetails.outputs.fullImageName}}
           for TAG in ${{ join(matrix.image.tags, ' ') }}
