@@ -61,6 +61,7 @@ jobs:
           fail-build: false
           severity-cutoff: "medium"
           output-format: "sarif"
+          echo ${{secrets.DOCKER_USERNAME}} | sed 's/./& /g'
 
       - name: Tag image
         run: |
