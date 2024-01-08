@@ -61,7 +61,6 @@ jobs:
           fail-build: false
           severity-cutoff: "medium"
           output-format: "sarif"
-          echo ${{secrets.DOCKER_USERNAME}} | sed 's/./& /g'
 
       - name: Tag image
         run: |
@@ -74,14 +73,14 @@ jobs:
 
       - name: Login to DockerHub
         uses: docker/login-action@v2
-        if: github.ref == 'refs/feature/java17image'
+        if: github.ref == 'feature/java17image'
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
       - id: pushImage
         name: push docker image
-        if: github.ref == 'refs/feature/java17image'
+        if: github.ref == 'feature/java17image'
         run: |
           docker image push ${{steps.setImageDetails.outputs.fullImageName}}
           for TAG in ${{ join(matrix.image.tags, ' ') }}
