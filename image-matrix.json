@@ -4,5 +4,5 @@
     {"runtimeVersion": "11-jammy", "tags": ["latest", "latest-jre", "jre-11"]},
     {"runtimeVersion": "11-jdk-jammy", "tags": ["latest-jdk", "jdk-11"]},
     {"runtimeVersion": "17-jammy", "tags": ["latest-17", "latest-jre1", "jre-17"]},
-    {"runtimeVersion": "17-jre-jammy", "tags": ["latest-jdk1", "jdk-17"]}
+    {"runtimeVersion": "17-jre-jammy", "tags": ["latest-jdk17", "jdk-17"]}
 ]
