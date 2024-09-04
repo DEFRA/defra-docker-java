@@ -9,6 +9,7 @@ The following table lists the versions of Java available, and the parent Java im
 | 8             | eclipse-temurin:8-jammy  |
 | 11            | eclipse-temurin:11-jammy |
 | 17            | eclipse-temurin:17-jammy |
+| 21            | eclipse-temurin:21-jammy |
 
 [Examples](./example) are provided to show how parent images can be extended for different types of services. These should be a good starting point for building Java services conforming to Defra standards.
 
@@ -27,9 +28,9 @@ The image includes the certificate for the internal [CA](https://en.wikipedia.or
 
 ## Versioning
 
-Images should be tagged according to the Dockerfile version and the version of Java on which the image is based. For example, for Dockerfile version `1.0.0` based on Java `17.0.8+7`, the built image would be tagged `1.1.2-java17.0.8+7`.
+Images should be tagged according to the Dockerfile version and the version of Java on which the image is based. For example, for Dockerfile version `1.0.0` based on Java `21.0.3`, the built image would be tagged `1.1.3-java21.0.3`.
 
-Other tags are also pushed, e.g. `jdk-8` , `jre-11` & `jre-17` to allow pointing at the latest image for that sdk version, together with `latest`.
+Other tags are also pushed, e.g. `jdk-8` , `jre-11` , `jre-17` & `jre-21` to allow pointing at the latest image for that sdk version, together with `latest`.
 
 ## Example files
 
@@ -45,7 +46,7 @@ The Java version marked as `latest` in the [image-matrix.json](image-matrix.json
 
 ## Image vulnerability scanning
 
-A GitHub Action runs a nightly Anchore Grype scan of the image published to Docker, and will build and scan pre-release images on push. At present the latest Java 8/11/17 JDK/JRE images are scanned.
+A GitHub Action runs a nightly Anchore Grype scan of the image published to Docker, and will build and scan pre-release images on push. At present the latest Java 8/11/17/21 JDK/JRE images are scanned.
 
 This ensures Defra services that use the parent images are starting from a known secure foundation, and can limit patching to only newly added libraries.
 
