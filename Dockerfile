@@ -19,7 +19,7 @@ RUN apt-get -o APT::Update::Error-Mode=any -y upgrade && apt-get clean
 
 # Never run as root, default to the jreuser user. Group 1000 taken by Ubuntu in newer images.
 # Only bumbing group ID if taken for backwards compatibility of older images.
-RUN RUN GID=$(getent group 1000 >/dev/null && echo 1010 || echo 1000) && \
+RUN GID=$(getent group 1000 >/dev/null && echo 1010 || echo 1000) && \
     groupadd --gid $GID jreuser && \
     UID=$(getent passwd 1000 >/dev/null && echo 1010 || echo 1000) && \
     useradd --uid $UID --gid $GID --shell /bin/bash --create-home jreuser
