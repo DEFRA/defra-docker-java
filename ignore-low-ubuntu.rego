@@ -2,7 +2,7 @@ package trivy.ignore
 
 default ignore = false
 
-# Ignore LOW severity Ubuntu OS packages like coreutils
+# Return true if the vulnerability should be ignored
 ignore {
   input.Type == "os"
   input.Vulnerability.Severity == "LOW"
