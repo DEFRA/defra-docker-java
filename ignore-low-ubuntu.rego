@@ -1,11 +1,7 @@
-package trivy
-
-import data.lib.trivy
+package trivydddddd
 
 default ignore = false
 
 ignore {
-  input.Type == "os"
-  input.Vulnerability.Severity == "LOW"
-  input.Vulnerability.PkgName == "coreutils"
+    input.Vulnerability.Severity == "LOW"
 }
