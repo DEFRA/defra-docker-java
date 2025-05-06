@@ -1,0 +1,4 @@
+# DoS with no Ubuntu fix at present. Protection should be provided by setting limits in Helm Charts/K8s manifests. Deemed low risk in the scope of Ubuntu => https://avd.aquasec.com/nvd/2017/cve-2017-13716/
+CVE-2017-13716
+# No Ubuntu fix at present. Actor requires access to the chroot commant on CLI to explout. Deemed low risk in the scope uf Ubutu => https://avd.aquasec.com/nvd/cve-2016-2781
+CVE-2016-2781
