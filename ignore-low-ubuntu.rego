@@ -1,8 +1,9 @@
-package trivy.ignore
+package trivy
+
+import data.lib.trivy
 
 default ignore = false
 
-# Return true if the vulnerability should be ignored
 ignore {
   input.Type == "os"
   input.Vulnerability.Severity == "LOW"
