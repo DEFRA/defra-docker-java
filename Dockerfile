@@ -3,6 +3,10 @@ ARG DEFRA_VERSION=1.2.0
 ARG BASE_VERSION=21-jdk-noble
 
 FROM eclipse-temurin:$BASE_VERSION AS production
+FROM eclipse-temurin:$BASE_VERSION AS development
+
+# Common build steps for both stages
+FROM production AS final
 
 ARG BASE_VERSION
 ARG DEFRA_VERSION
