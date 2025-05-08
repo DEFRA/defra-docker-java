@@ -115,7 +115,7 @@ jobs:
 
       - id: pushImage
         name: push docker image
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || matrix.target == 'development'
         run: |
           docker image push ${{steps.setImageDetails.outputs.fullImageName}}
           for TAG in ${{ join(matrix.image.tags, ' ') }}
