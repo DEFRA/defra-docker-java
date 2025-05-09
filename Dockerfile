@@ -2,12 +2,9 @@
 ARG DEFRA_VERSION=1.2.0
 ARG BASE_VERSION=21-jdk-noble
 
-FROM eclipse-temurin:$BASE_VERSION AS production
-FROM eclipse-temurin:$BASE_VERSION AS development
+FROM eclipse-temurin:$BASE_VERSION AS base
 
 # Common build steps for both stages
-FROM production AS final
-
 ARG BASE_VERSION
 ARG DEFRA_VERSION
 
@@ -35,3 +32,6 @@ WORKDIR /home/jreuser
 LABEL uk.gov.defra.java.java-version=$BASE_VERSION \
       uk.gov.defra.java.version=$DEFRA_VERSION \
       uk.gov.defra.java.repository=defradigital/java
+
+FROM base AS production
+FROM base AS development
