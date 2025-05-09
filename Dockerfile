@@ -25,6 +25,7 @@ RUN GID=$(getent group 1000 >/dev/null && echo 1010 || echo 1000) && \
     UID=$(getent passwd 1000 >/dev/null && echo 1010 || echo 1000) && \
     useradd --uid $UID --gid $GID --shell /bin/bash --create-home jreuser
 
+USER jreuser
 # Default workdir should be owned by the default user
 WORKDIR /home/jreuser
 
