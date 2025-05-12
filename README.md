@@ -11,7 +11,7 @@ The following table lists the versions of Java available, and the parent Java im
 | 21            | eclipse-temurin:21-jammy |
 | 21            | eclipse-temurin:21-noble |
 
-[Examples](./example) are provided to show how parent images can be extended for different types of services. These should be a good starting point for building Java services conforming to Defra standards.
+[Examples](./example) are provided to show how parent images can be extended for different types of services. These should be a good starting point for building Java services conforming to DEFRA standards.
 
 ## Building images locally
 
