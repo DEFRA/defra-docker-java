@@ -1,10 +1,10 @@
 [
-    {"runtimeVersion": "11-jammy", "tags": ["latest", "latest-jre", "jre-11"]},
-    {"runtimeVersion": "11-jdk-jammy", "tags": ["latest-jdk", "jdk-11"]},
-    {"runtimeVersion": "17-jammy", "tags": ["jre-17"]},
-    {"runtimeVersion": "17-jdk-jammy", "tags": ["jdk-17"]},
-    {"runtimeVersion": "21-jammy", "tags": ["jre-21"]},
-    {"runtimeVersion": "21-jdk-jammy", "tags": ["jdk-21"]},
-    {"runtimeVersion": "21-noble", "tags": ["jre-21"]},
-    {"runtimeVersion": "21-jdk-noble", "tags": ["jdk-21"]}
+    {"runtimeVersion": "11-jammy", "majorVersion": "11", "runtimeType": "jre", "baseImage": "jammy", "tags": ["latest", "latest-jre", "jre-11"]},
+    {"runtimeVersion": "11-jdk-jammy", "majorVersion": "11", "runtimeType": "jdk", "baseImage": "jammy", "tags": ["latest-jdk", "jdk-11"]},
+    {"runtimeVersion": "17-jammy", "majorVersion": "17", "runtimeType": "jre", "baseImage": "jammy", "tags": ["jre-17"]},
+    {"runtimeVersion": "17-jdk-jammy", "majorVersion": "17", "runtimeType": "jdk", "baseImage": "jammy", "tags": ["jdk-17"]},
+    {"runtimeVersion": "21-jammy", "majorVersion": "21", "runtimeType": "jre", "baseImage": "jammy", "tags": ["jre-21"]},
+    {"runtimeVersion": "21-jdk-jammy", "majorVersion": "21", "runtimeType": "jdk", "baseImage": "jammy", "tags": ["jdk-21"]},
+    {"runtimeVersion": "21-noble", "majorVersion": "21", "runtimeType": "jre", "baseImage": "noble", "tags": ["jre-21"]},
+    {"runtimeVersion": "21-jdk-noble", "majorVersion": "21", "runtimeType": "jdk", "baseImage": "noble", "tags": ["jdk-21"]}
 ]
