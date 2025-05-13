@@ -65,9 +65,7 @@ jobs:
               echo "Updates are needed"
               echo "update_needed=true" >> $GITHUB_ENV
               jq -s '.' "$temp_file"
-              exit 1
           else
               echo "All versions are up to date"
               echo "update_needed=false" >> $GITHUB_ENV
-              exit 0
           fi
