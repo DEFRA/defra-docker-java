@@ -1,12 +1,6 @@
 name: AUTO-UPDATE
 
-on:
-  schedule:
-    - cron: '0 2 * * *'
-  workflow_dispatch:
-  push:
-    branches:
-      - master
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   check-and-update:
@@ -74,84 +68,6 @@ jobs:
               exit 1
           else
               echo "All versions are up to date"
+              echo "update_needed=false" >> $GITHUB_ENV
               exit 0
           fi
-
-          # Check if updates.txt exists and is not empty
-          if [[ -s updates.txt ]]; then
-            
-          else
-            echo "update_needed=false" >> $GITHUB_ENV
-          fi
-
-      - name: Update files
-        if: env.update_needed == 'true'
-        run: |
-          # Update image-matrix.json
-          while IFS=: read -r major_version latest_version alpine_version; do
-            sed -i "s/\"nodeVersion\": \"${major_version}\.[^\"]*\"/\"nodeVersion\": \"${latest_version}\"/" image-matrix.json
-          done < updates.txt
-          echo "Updated image-matrix.json"
-
-          # Update README.md
-          while IFS=: read -r major_version latest_version alpine_version; do
-            sed -i -E "s/\\|[[:space:]]*${major_version}\\.[[:digit:]]*\\.[[:digit:]]*[[:space:]]*\\|[[:space:]]*${major_version}\\.[[:digit:]]*\\.[[:digit:]]*-alpine[[:digit:]]*\\.[[:digit:]]*[[:space:]]*\\|/| ${latest_version}       | ${latest_version}-alpine${alpine_version} |/" README.md
-          done < updates.txt
-          echo "Updated README.md"
-
-          # Update JOB.env
-          current_defra_version=$(grep -oP 'DEFRA_VERSION=\K[\d.]+' JOB.env)
-          new_defra_version=$(echo "$current_defra_version" | awk -F. '{print $1"."$2"."$3+1}')
-          sed -i "s/DEFRA_VERSION=.*/DEFRA_VERSION=${new_defra_version}/" JOB.env
-          echo "Updated JOB.env"
-
-          # Update Dockerfile
-          latest_node_version=$(jq -r '.[] | select(.tags[] == "latest") | .nodeVersion' image-matrix.json)
-          latest_alpine_version=$(jq -r '.[] | select(.tags[] == "latest") | .alpineVersion' image-matrix.json)
-          sed -i "s/ARG BASE_VERSION=.*/ARG BASE_VERSION=${latest_node_version}-alpine${latest_alpine_version}/" Dockerfile
-          sed -i "s/ARG DEFRA_VERSION=.*/ARG DEFRA_VERSION=${new_defra_version}/" Dockerfile
-          echo "Updated Dockerfile"
-
-      - name: Prepare pull request details
-        if: env.update_needed == 'true'
-        run: |
-          # Read updates.txt into an environment variable
-          updated_versions=$(cat updates.txt | awk -F: '{print $1}' | sort -u | paste -sd, -)
-
-          pull_request_title="Update Node.js base image: ${updated_versions}"
-          pull_request_body=$(cat updates.txt | awk -F: '{print "- Node " $1 ": " $2}')
-          pull_request_branch="update-node-base-image-${updated_versions//,/}"
-
-          echo "pull_request_branch=${pull_request_branch}" >> $GITHUB_ENV
-          echo "pull_request_title=${pull_request_title}" >> $GITHUB_ENV
-          echo "pull_request_body=${pull_request_body}" >> $GITHUB_ENV
-          echo "Prepared pull request details."
-
-      - name: Clean up temporary files
-        if: env.update_needed == 'true'
-        run: |
-          rm -f node_versions.json updates.txt
-          echo "Removed temporary files."
-
-      - name: Generate GitHub App token
-        if: env.update_needed == 'true'
-        id: generate-token
-        uses: tibdex/github-app-token@v2
-        with:
-          app_id: ${{ secrets.APP_ID }}
-          private_key: ${{ secrets.APP_PRIVATE_KEY }}
-
-      - name: Create pull request
-        if: env.update_needed == 'true'
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ steps.generate-token.outputs.token }}
-          branch: ${{ env.pull_request_branch }}
-          base: master
-          title: ${{ env.pull_request_title }}
-          body: |
-            Updates the Node.js base images to the latest versions:
-            ${{ env.pull_request_body }}
-          sign-commits: true
-          commit-message: ${{ env.pull_request_title }}
-          team-reviewers: ${{ vars.PR_REVIEW_TEAM }}
