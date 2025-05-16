@@ -44,7 +44,7 @@ jobs:
           fi
           
           echo "dockerRepoName=$DOCKER_REPO_NAME" >> $GITHUB_OUTPUT
-          echo "fullImageName=$DOCKER_REPO_NAME:$DEFRA_VERSION-$GITHUB_RUN_NUMBER-java${{matrix.image.runTimeVersion}}" >> $GITHUB_OUTPUT
+          echo "fullImageName=$DOCKER_REPO_NAME:$DEFRA_VERSION-$GITHUB_RUN_NUMBER-java-${{matrix.image.runTimeVersion}}" >> $GITHUB_OUTPUT
 
       - name: Build the Docker image
         run: |
