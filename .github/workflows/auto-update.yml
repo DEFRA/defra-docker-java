@@ -1,6 +1,12 @@
 name: AUTO-UPDATE
 
-on: [push, pull_request, workflow_dispatch]
+on:
+    schedule:
+      - cron: '0 2 * * *'
+    workflow_dispatch:
+    push:
+      branches:
+        - main
 
 jobs:
   check-and-update:
