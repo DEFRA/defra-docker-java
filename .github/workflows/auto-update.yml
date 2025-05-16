@@ -194,7 +194,6 @@ jobs:
             base: main
             title: ${{ env.pull_request_title }}
             body: |
-                Updates the Java base images to the latest versions:
                 ${{ env.pull_request_body }}
             sign-commits: true
             commit-message: ${{ env.pull_request_title }}
