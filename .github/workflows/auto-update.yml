@@ -103,7 +103,7 @@ jobs:
 
             while IFS=: read -r current_version major type base latest_version; do
                 echo "Replacing $current_version → $latest_version" >&2
-                sed -i '' "s|\"runtimeVersion\"[[:space:]]*:[[:space:]]*\"${current_version}\"|\"runtimeVersion\": \"${latest_version}\"|" image-matrix.json
+                sed -i "s|\"runtimeVersion\"[[:space:]]*:[[:space:]]*\"${current_version}\"|\"runtimeVersion\": \"${latest_version}\"|" image-matrix.json
             done < updates.txt
 
             # Check if image-matrix.json was actually changed
