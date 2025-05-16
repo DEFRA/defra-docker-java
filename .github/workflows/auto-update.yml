@@ -159,13 +159,16 @@ jobs:
             # Read updates.txt into an environment variable
             updated_versions=$(cat updates.txt | awk -F: '{print $1}' | sort -u | paste -sd, -)
 
-            pull_request_title="Update Node.js base image: ${updated_versions}"
-            pull_request_body=$(cat updates.txt | awk -F: '{print "- Node " $1 ": " $2}')
-            pull_request_branch="update-node-base-image-${updated_versions//,/}"
+            pull_request_title="Update Java base image: ${updated_versions}"
+            pull_request_body=$(cat updates.txt | awk -F: '{printf "- %s: %s\n", $1, $5}')
+            pull_request_branch="update-java-base-image-${updated_versions//,/}"
 
             echo "pull_request_branch=${pull_request_branch}" >> $GITHUB_ENV
             echo "pull_request_title=${pull_request_title}" >> $GITHUB_ENV
-            echo "pull_request_body=${pull_request_body}" >> $GITHUB_ENV
+            echo "pull_request_body<<EOF" >> $GITHUB_ENV
+            echo "Updates the Java base images to the latest versions:" >> $GITHUB_ENV
+            echo "${pull_request_body}" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
             echo "Prepared pull request details."
 
       - name: Clean up temporary files
@@ -191,7 +194,7 @@ jobs:
             base: master
             title: ${{ env.pull_request_title }}
             body: |
-                Updates the Node.js base images to the latest versions:
+                Updates the Java base images to the latest versions:
                 ${{ env.pull_request_body }}
             sign-commits: true
             commit-message: ${{ env.pull_request_title }}
