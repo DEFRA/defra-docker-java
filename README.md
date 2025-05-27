@@ -6,12 +6,12 @@ The following table lists the versions of Java available, and the parent Java im
 
 | Java version  | Parent image             |
 | ------------- | ------------------------ |
-| 8             | eclipse-temurin:8-jammy  |
 | 11            | eclipse-temurin:11-jammy |
 | 17            | eclipse-temurin:17-jammy |
 | 21            | eclipse-temurin:21-jammy |
+| 21            | eclipse-temurin:21-noble |
 
-[Examples](./example) are provided to show how parent images can be extended for different types of services. These should be a good starting point for building Java services conforming to Defra standards.
+[Examples](./example) are provided to show how parent images can be extended for different types of services. These should be a good starting point for building Java services conforming to DEFRA standards.
 
 ## Building images locally
 
@@ -28,9 +28,25 @@ The image includes the certificate for the internal [CA](https://en.wikipedia.or
 
 ## Versioning
 
-Images should be tagged according to the Dockerfile version and the version of Java on which the image is based. For example, for Dockerfile version `1.0.0` based on Java `21.0.3`, the built image would be tagged `1.1.3-java21.0.3`.
+Images should be tagged according to the Dockerfile version and the version of Java on which the image is based. For example, for Dockerfile version `1.0.0` based on Java `21.0.3`, the built image would be tagged `1.0.0-java21.0.3`. 1.2.0-287-java21-noble
 
-Other tags are also pushed, e.g. `jdk-8` , `jre-11` , `jre-17` & `jre-21` to allow pointing at the latest image for that sdk version, together with `latest`.
+Inmages are tagged according to:
+  
+  1. Dockerfile version and the version of Java on which the image is based.
+  2. The build ID. This has be introduce to maintain immutability (i.e. prevent the opportunity for different builds with the same tag).
+  3. Java version.
+  4. Ubuntu version
+
+  e.g. `1.2.0-287-java11-jammy`
+
+
+Other tags are also pushed to allow pointing at the latest image for that jdk/sdk version, together with `latest` e.g 
+
+- `latest` and `latest-jre` - Points to the latest JRE 11 image
+- `latest-jdk` - Points to the latest JDK 11 image
+- `jre-11`, `jre-17`, `jre-21` - Points to the latest JRE image for that Java version
+- `jdk-11`, `jdk-17`, `jdk-21` - Points to the latest JDK image for that Java version
+
 
 ## Example files
 

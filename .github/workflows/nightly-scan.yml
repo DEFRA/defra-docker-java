@@ -26,28 +26,47 @@ jobs:
         image: ${{fromJSON(needs.get-matrix-values.outputs.image)}}
     steps:
       - uses: actions/checkout@v3
+
       - name: Set job environment variables
         run:  cat JOB.env >> $GITHUB_ENV
-      - name: Scan Java docker image for Sarif output
-        id: scan
-        uses: anchore/scan-action@v3
+
+      - name: Run Anchore Grype scan
+        id: grype-scan
+        uses: anchore/scan-action@v6
         with:
           image: defradigital/${{env.IMAGE_NAME}}:${{env.DEFRA_VERSION}}-java${{matrix.image.runTimeVersion}}
           fail-build: false
           severity-cutoff: "medium"
-          output-format: "sarif"
-      - name: Scan Java docker image for build failure
-        uses: anchore/scan-action@v3
+        continue-on-error: true
+      
+      - name: Run Aqua Trivy scan
+        id: trivy-scan
+        uses: aquasecurity/trivy-action@0.30.0
         with:
-          image: defradigital/${{env.IMAGE_NAME}}:${{env.DEFRA_VERSION}}-java${{matrix.image.runTimeVersion}}
-          fail-build: true
-          severity-cutoff: "medium"
-          only-fixed: true
-      - name: Upload Anchore Grype SARIF report
-        if: always() && steps.scan.outputs.sarif
-        uses: github/codeql-action/upload-sarif@v2
+          image-ref: defradigital/${{env.IMAGE_NAME}}:${{env.DEFRA_VERSION}}-java${{matrix.image.runTimeVersion}}
+          format: sarif
+          output: trivy-reports-java-${{ matrix.image.runTimeVersion }}
+          exit-code: 1
+          vuln-type: os,library
+          severity: CRITICAL,HIGH,MEDIUM
+        continue-on-error: true
+
+      - name: Upload Grype SARIF report
+        if: ${{ steps.grype-scan.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
         with:
-          sarif_file: ${{ steps.scan.outputs.sarif }}
-      - name: Inspect action SARIF report
-        if: always() && steps.scan.outputs.sarif
-        run: cat ${{ steps.scan.outputs.sarif }}
+          name: grype-reports-java-${{ matrix.image.runTimeVersion }}
+          path: ${{ steps.grype-scan.outputs.sarif }}
+
+      - name: Upload Trivy SARIF report
+        if: ${{ steps.trivy-scan.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports-java-${{ matrix.image.runTimeVersion }}
+          path: trivy-reports-java-${{ matrix.image.runTimeVersion }}
+
+      - name: Fail build if scans failed
+        if: ${{ (steps.grype-scan.outcome == 'failure' || steps.trivy-scan.outcome == 'failure') }}
+        run: |
+          echo "One or more scans failed. Failing the build."
+          exit 1

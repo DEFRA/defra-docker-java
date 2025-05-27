@@ -1,0 +1,207 @@
+name: AUTO-UPDATE
+
+on:
+    schedule:
+      - cron: '0 2 * * *'
+    workflow_dispatch:
+    push:
+      branches:
+        - main
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Check for updates
+        id: check-updates
+        run: |
+            # Tags are spread over multiple pages. Colate all pages and cache.      
+            fetch_all_tags() {
+                local url="https://hub.docker.com/v2/repositories/library/eclipse-temurin/tags?page_size=100"
+                ALL_TAGS_JSON=""
+
+                while [ -n "$url" ]; do
+                    echo "Fetching: $url" >&2
+                    response=$(curl -s "$url")
+                    ALL_TAGS_JSON+=$(echo "$response" | jq -c '.results[]')$'\n'
+                    url=$(echo "$response" | jq -r '.next')
+                    [[ "$url" == "null" ]] && break
+                done
+            }
+
+            # Function to get latest version for a specific Java version and base image
+            get_latest_version() {
+                local major_version=$1
+                local base_image=$2
+                local runtime_type=$3
+
+                if [ -z "$ALL_TAGS_JSON" ]; then
+                    echo "Error: Tag data not loaded. Run fetch_all_tags first." >&2
+                    return 1
+                fi
+
+                version=$(echo "$ALL_TAGS_JSON" | jq -r \
+                    "select(.name | startswith(\"$major_version.\") and
+                                    contains(\"-$runtime_type-$base_image\")) |
+                    .name" | sort -V | tail -n 1)
+
+                if [ -z "$version" ]; then
+                    echo "Error: No matching version found" >&2
+                    return 1
+                fi
+
+                echo "$version"
+            }
+
+            # Read the matrix file
+            matrix_file="image-matrix.json"
+            matrix_content=$(cat "$matrix_file")
+
+            export UPDATE_NEEDED=false
+
+            entries=()
+
+            fetch_all_tags
+
+            while IFS= read -r entry; do
+                major=$(echo "$entry" | jq -r '.majorVersion')
+                base=$(echo "$entry" | jq -r '.baseImage')
+                type=$(echo "$entry" | jq -r '.runtimeType')
+                current_version=$(echo "$entry" | jq -r '.runtimeVersion')
+
+                latest_version=$(get_latest_version "$major" "$base" "$type")
+
+                if [ "$current_version" != "$latest_version" ]; then
+                    echo "Update needed for $major $base $type:"
+                    echo "  Current: $current_version"
+                    echo "  Latest:  $latest_version"
+                    entry=$(echo "$entry" | jq --arg ver "$latest_version" '.runtimeVersion = $ver')
+                    echo "$current_version:$major:$type:$base:$latest_version" >> updates.txt
+                fi
+
+                entries+=("$(echo "$entry" | jq -c '.')")
+            done < <(echo "$matrix_content" | jq -c '.[]')
+
+            # Check if updates.txt exists and is not empty
+            if [[ -s updates.txt ]]; then
+                echo "update_needed=true" >> $GITHUB_ENV
+            else
+                echo "update_needed=false" >> $GITHUB_ENV
+            fi
+
+      - name: Update files
+        if: env.update_needed == 'true'
+        run: |
+            tmp_job_env=$(mktemp)
+            tmp_dockerfile=$(mktemp)
+            echo "Updates are needed"
+            echo "$current_version"
+            echo "$latest_version"
+
+            # Obtain and Bump DEFRA Version
+            current_defra_version=$(sed -n 's/^DEFRA_VERSION=//p' JOB.env)
+            new_defra_version=$(echo "$current_defra_version" | awk -F. '{print $1"."$2"."$3+1}')
+
+            # Update image-matrix.json
+            cp image-matrix.json "${tmp_job_env}.matrix.bak"
+
+            while IFS=: read -r current_version major type base latest_version; do
+                echo "Replacing $current_version → $latest_version" >&2
+                sed -i "s|\"runtimeVersion\"[[:space:]]*:[[:space:]]*\"${current_version}\"|\"runtimeVersion\": \"${latest_version}\"|" image-matrix.json
+            done < updates.txt
+
+            # Check if image-matrix.json was actually changed
+            if ! cmp -s image-matrix.json "${tmp_job_env}.matrix.bak"; then
+                echo "✅ Updated image-matrix.json"
+            else
+                echo "❌ image-matrix.json was not updated."
+            fi
+            rm "${tmp_job_env}.matrix.bak"
+
+            # Update JOB.env
+            latest_java_version=$(jq -r '.[] | select(.tags[] == "latest") | .runtimeVersion' image-matrix.json)
+            echo "Latest Java Version: ${latest_java_version}"
+            
+            # Create backup of JOB.env
+            cp JOB.env "${tmp_job_env}.bak"
+            
+            # Make changes to JOB.env
+            sed "s/^BASE_VERSION=.*/BASE_VERSION=${latest_java_version}/" JOB.env > "$tmp_job_env"
+            mv "$tmp_job_env" JOB.env
+            sed "s/^DEFRA_VERSION=.*/DEFRA_VERSION=${new_defra_version}/" JOB.env > "$tmp_job_env"
+            mv "$tmp_job_env" JOB.env
+            
+            # Check if JOB.env was actually changed
+            if ! cmp -s JOB.env "${tmp_job_env}.bak"; then
+                echo "✅ Updated JOB.env"
+            else
+                echo "❌ JOB.env was not updated."
+            fi
+            rm "${tmp_job_env}.bak"
+
+            # Update Dockerfile
+            # Create backup of Dockerfile
+            cp Dockerfile "${tmp_dockerfile}.bak"
+            
+            # Make changes to Dockerfile
+            sed "s/^ARG BASE_VERSION=.*/ARG BASE_VERSION=${latest_java_version}/" Dockerfile > "$tmp_dockerfile"
+            mv "$tmp_dockerfile" Dockerfile
+            sed "s/^ARG DEFRA_VERSION=.*/ARG DEFRA_VERSION=${new_defra_version}/" Dockerfile > "$tmp_dockerfile"
+            mv "$tmp_dockerfile" Dockerfile
+            
+            # Check if Dockerfile was actually changed
+            if ! cmp -s Dockerfile "${tmp_dockerfile}.bak"; then
+                echo "✅ Updated Dockerfile"
+            else
+                echo "❌ Dockerfile was not updated."
+            fi
+            rm "${tmp_dockerfile}.bak"
+
+      - name: Prepare pull request details
+        if: env.update_needed == 'true'
+        run: |
+            # Read updates.txt into an environment variable
+            updated_versions=$(cat updates.txt | awk -F: '{print $1}' | sort -u | paste -sd, -)
+
+            pull_request_title="Update Java base image: ${updated_versions}"
+            pull_request_body=$(cat updates.txt | awk -F: '{printf "- %s: %s\n", $1, $5}')
+            pull_request_branch="update-java-base-image-${updated_versions//,/}"
+
+            echo "pull_request_branch=${pull_request_branch}" >> $GITHUB_ENV
+            echo "pull_request_title=${pull_request_title}" >> $GITHUB_ENV
+            echo "pull_request_body<<EOF" >> $GITHUB_ENV
+            echo "Updates the Java base images to the latest versions:" >> $GITHUB_ENV
+            echo "${pull_request_body}" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+            echo "Prepared pull request details."
+
+      - name: Clean up temporary files
+        if: env.update_needed == 'true'
+        run: |
+            rm -f node_versions.json updates.txt
+            echo "Removed temporary files."
+
+      - name: Generate GitHub App token
+        if: env.update_needed == 'true'
+        id: generate-token
+        uses: tibdex/github-app-token@v2
+        with:
+            app_id: ${{ secrets.APP_ID }}
+            private_key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Create pull request
+        if: env.update_needed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+            token: ${{ steps.generate-token.outputs.token }}
+            branch: ${{ env.pull_request_branch }}
+            base: main
+            title: ${{ env.pull_request_title }}
+            body: |
+                ${{ env.pull_request_body }}
+            sign-commits: true
+            commit-message: ${{ env.pull_request_title }}
+            team-reviewers: ${{ vars.PR_REVIEW_TEAM }}

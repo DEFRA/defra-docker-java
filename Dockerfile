@@ -1,9 +1,10 @@
 # Set default values for build arguments
-ARG DEFRA_VERSION=1.1.3
-ARG BASE_VERSION=21-jdk-jammy
+ARG DEFRA_VERSION=21.0.10
+ARG BASE_VERSION=21.0.7_6-jre-noble
 
-FROM eclipse-temurin:$BASE_VERSION AS production
+FROM eclipse-temurin:$BASE_VERSION AS base
 
+# Common build steps for both stages
 ARG BASE_VERSION
 ARG DEFRA_VERSION
 
@@ -17,11 +18,14 @@ RUN keytool -noprompt -keystore $([ -d $JAVA_HOME/lib/security ] && echo $JAVA_H
 # Update all packages
 RUN apt-get -o APT::Update::Error-Mode=any -y upgrade && apt-get clean
 
-# Never run as root, default to the jreuser user
-RUN groupadd --gid 1000 jreuser \
-  && useradd --uid 1000 --gid jreuser --shell /bin/bash --create-home jreuser
-USER jreuser
+# Never run as root, default to the jreuser user. Group 1000 taken by Ubuntu in newer images.
+# Only bumbing group ID if taken for backwards compatibility of older images.
+RUN GID=$(getent group 1000 >/dev/null && echo 1010 || echo 1000) && \
+    groupadd --gid $GID jreuser && \
+    UID=$(getent passwd 1000 >/dev/null && echo 1010 || echo 1000) && \
+    useradd --uid $UID --gid $GID --shell /bin/bash --create-home jreuser
 
+USER jreuser
 # Default workdir should be owned by the default user
 WORKDIR /home/jreuser
 
@@ -29,3 +33,6 @@ WORKDIR /home/jreuser
 LABEL uk.gov.defra.java.java-version=$BASE_VERSION \
       uk.gov.defra.java.version=$DEFRA_VERSION \
       uk.gov.defra.java.repository=defradigital/java
+
+FROM base AS production
+FROM base AS development
