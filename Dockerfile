@@ -1,5 +1,5 @@
 # Set default values for build arguments
-ARG DEFRA_VERSION=21.0.10
+ARG DEFRA_VERSION=1.2.0
 ARG BASE_VERSION=21.0.7_6-jre-noble
 
 FROM eclipse-temurin:$BASE_VERSION AS base
