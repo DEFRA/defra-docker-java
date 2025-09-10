@@ -5,6 +5,8 @@
 {"runtimeVersion": "17.0.15_6-jdk-jammy","majorVersion":"17","runtimeType":"jdk","baseImage":"jammy","tags":["jdk-17"]},
 {"runtimeVersion": "21.0.7_6-jre-jammy","majorVersion":"21","runtimeType":"jre","baseImage":"jammy","tags":["jre-21"]},
 {"runtimeVersion": "21.0.7_6-jdk-jammy","majorVersion":"21","runtimeType":"jdk","baseImage":"jammy","tags":["jdk-21"]},
-{"runtimeVersion": "21.0.7_6-jre-noble","majorVersion":"21","runtimeType":"jre","baseImage":"noble","tags":["latest","latest-jre","jre-21"]},
-{"runtimeVersion": "21.0.7_6-jdk-noble","majorVersion":"21","runtimeType":"jdk","baseImage":"noble","tags":["latest-jdk","jdk-21"]}
+{"runtimeVersion": "21.0.7_6-jre-noble","majorVersion":"21","runtimeType":"jre","baseImage":"noble","tags":["jre-21-noble"]},
+{"runtimeVersion": "21.0.7_6-jdk-noble","majorVersion":"21","runtimeType":"jdk","baseImage":"noble","tags":["jdk-21-noble"]},
+{"runtimeVersion": "21.0.8_9-jre-noble","majorVersion":"21","runtimeType":"jre","baseImage":"noble","tags":["latest","latest-jre","jre-21"]},
+{"runtimeVersion": "21.0.8_9-jdk-noble","majorVersion":"21","runtimeType":"jdk","baseImage":"noble","tags":["latest-jdk","jdk-21"]}
 ]
