@@ -15,9 +15,8 @@ jobs:
       - uses: actions/checkout@v3
       - id: set-var
         run: |
-          echo 'image<<EOF' >> $GITHUB_OUTPUT
-          cat ./image-matrix.json >> $GITHUB_OUTPUT
-          echo 'EOF' >> $GITHUB_OUTPUT
+          IMAGE_JSON=$(tr -d '\n' < ./image-matrix.json)
+          echo "image=$IMAGE_JSON" >> "$GITHUB_OUTPUT"
   
   build-images:
     runs-on: ubuntu-latest
@@ -44,7 +43,7 @@ jobs:
           fi
           
           echo "dockerRepoName=$DOCKER_REPO_NAME" >> $GITHUB_OUTPUT
-          echo "fullImageName=$DOCKER_REPO_NAME:$DEFRA_VERSION-$GITHUB_RUN_NUMBER-java-${{matrix.image.runTimeVersion}}" >> $GITHUB_OUTPUT
+          echo "fullImageName=$DOCKER_REPO_NAME:$DEFRA_VERSION-$GITHUB_RUN_NUMBER-java-${{matrix.image.runtimeVersion}}" >> $GITHUB_OUTPUT
 
       - name: Build the Docker image
         run: |
@@ -72,7 +71,7 @@ jobs:
         with:
           image-ref: ${{steps.setImageDetails.outputs.fullImageName}}
           format: sarif
-          output: trivy-reports-java-${{ matrix.image.runTimeVersion }}
+          output: trivy-reports-java-${{ matrix.image.runtimeVersion }}
           exit-code: 1
           vuln-type: os,library
           severity: CRITICAL,HIGH,MEDIUM
@@ -83,15 +82,15 @@ jobs:
         if: ${{ steps.grype-scan.outcome == 'failure' && matrix.target == 'production' }}
         uses: actions/upload-artifact@v4
         with:
-          name: grype-reports-java-${{ matrix.image.runTimeVersion }}
+          name: grype-reports-java-${{ matrix.image.runtimeVersion }}
           path: ${{ steps.grype-scan.outputs.sarif }}
 
       - name: Upload Trivy SARIF report
         if: ${{ steps.trivy-scan.outcome == 'failure' && matrix.target == 'production' }}
         uses: actions/upload-artifact@v4
         with:
-          name: trivy-reports-java-${{ matrix.image.runTimeVersion }}
-          path: trivy-reports-java-${{ matrix.image.runTimeVersion }}
+          name: trivy-reports-java-${{ matrix.image.runtimeVersion }}
+          path: trivy-reports-java-${{ matrix.image.runtimeVersion }}
 
       - name: Fail build if scans failed
         if: ${{ (steps.grype-scan.outcome == 'failure' || steps.trivy-scan.outcome == 'failure') && matrix.target == 'production' }}
