@@ -42,17 +42,15 @@ Inmages are tagged according to:
 
 Other tags are also pushed to allow pointing at the latest image for that jdk/sdk version, together with `latest` e.g 
 
-- `latest` and `latest-jre` - Points to the latest JRE 11 image
-- `latest-jdk` - Points to the latest JDK 11 image
-- `jre-11`, `jre-17`, `jre-21` - Points to the latest JRE image for that Java version
-- `jdk-11`, `jdk-17`, `jdk-21` - Points to the latest JDK image for that Java version
-
-
-## Example files
-
-`Dockerfile.service` - This is an example project that runs a web service.
-
-## CI/CD
+- `latest` and `latest-jre` - Points to the latest JRE 21 image
+- `latest-jdk` - Points to the latest JDK 21 image
+- `jre-11`, `jre-17`, `jre-21` - Points to the latest JRE image for that Java major version
+- `jre-21-7` - Points to the latest JRE image whilst targetting the latest patch of an older minor.
+- `jdk-21-7` - Points to the latest JDK image whilst targetting the lates patch an older minor.
+- `jre-21-jammy` - Points to the latest JRE image whilst targetting an older OS image.
+- `jdk-21-jammy` - Points to the latest JDK image whilst targetting an older OS image.
+- `jre-21-7-jammy` - JRE - points to the latest patch of an older minor. Uses an older OS image.
+- `jdk-21-7-jammy` - JDK - points to the latest patch of an older minor. Uses an older OS image.
 
 On commit GitHub Actions will build the `java` image for the Java versions listed in the [image-matrix.json](image-matrix.json) file, and perform a vulnerability scan, as described below.
 
