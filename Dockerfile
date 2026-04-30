@@ -10,10 +10,12 @@ ARG DEFRA_VERSION
 
 # Install Internal CA certificate
 RUN apt-get update -o APT::Update::Error-Mode=any && apt install -y ca-certificates && apt-get clean
-COPY certificates/internal-ca.crt /usr/local/share/ca-certificates/internal-ca.crt
-RUN chmod 644 /usr/local/share/ca-certificates/internal-ca.crt && update-ca-certificates
+COPY certificates/*.crt /usr/local/share/ca-certificates/
+
+RUN chmod 644 /usr/local/share/ca-certificates/*.crt && update-ca-certificates
 
 RUN keytool -noprompt -keystore $([ -d $JAVA_HOME/lib/security ] && echo $JAVA_HOME || echo $JAVA_HOME/jre)/lib/security/cacerts -storepass changeit -importcert -alias defraRootCertificate -file /usr/local/share/ca-certificates/internal-ca.crt
+RUN keytool -noprompt -keystore $([ -d $JAVA_HOME/lib/security ] && echo $JAVA_HOME || echo $JAVA_HOME/jre)/lib/security/cacerts -storepass changeit -importcert -alias defraPAsubcaCertificate -file /usr/local/share/ca-certificates/PAsubca.crt
 
 # Update all packages
 RUN apt-get -o APT::Update::Error-Mode=any -y upgrade && apt-get clean
