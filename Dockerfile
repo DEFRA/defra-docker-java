@@ -1,5 +1,5 @@
 # Set default values for build arguments
-ARG DEFRA_VERSION=1.3.3
+ARG DEFRA_VERSION=1.3.5
 ARG BASE_VERSION=21.0.10_7-jre-noble
 
 FROM eclipse-temurin:$BASE_VERSION AS base
@@ -11,7 +11,6 @@ ARG DEFRA_VERSION
 # Install Internal CA certificate
 RUN apt-get update -o APT::Update::Error-Mode=any && apt install -y ca-certificates && apt-get clean
 COPY certificates/*.crt /usr/local/share/ca-certificates/
-
 RUN chmod 644 /usr/local/share/ca-certificates/*.crt && update-ca-certificates
 
 RUN keytool -noprompt -keystore $([ -d $JAVA_HOME/lib/security ] && echo $JAVA_HOME || echo $JAVA_HOME/jre)/lib/security/cacerts -storepass changeit -importcert -alias defraRootCertificate -file /usr/local/share/ca-certificates/internal-ca.crt
