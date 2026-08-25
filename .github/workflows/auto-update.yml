@@ -24,7 +24,7 @@ jobs:
         env:
             DOCKERHUB_OIDC_CONNECTIONID: ${{ secrets.DOCKERHUB_OIDC_CONNECTIONID }}
         with:
-            username: ${{ secrets.DOCKER_OIDCUSERNAME }}
+            username: ${{ secrets.DOCKER_OIDC_USERNAME }}
 
       - name: Check for updates
         id: check-updates
