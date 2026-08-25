@@ -19,19 +19,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Get Docker Hub OIDC token
-        id: dockerOidc
-        uses: docker/oidc-action@b048fb089ace3e15a5fbdd784f4784d284ce5e8d # v1.1.0
-        with:
-          connection-id: ${{ secrets.DOCKER_HUB_OIDC_CONNECTION_ID }}
-
       - name: Login to DockerHub
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         env:
-          DOCKERHUB_OIDC_CONNECTIONID: ${{ secrets.DOCKERHUB_OIDC_CONNECTIONID }}
+          DOCKERHUB_OIDC_CONNECTIONID: ${{ vars.DOCKERHUB_OIDC_CONNECTIONID }}
         with:
           username: ${{ secrets.DOCKER_OIDC_USERNAME }}
-          password: ${{ steps.dockerOidc.outputs.token }}
 
       - name: Check for updates
         id: check-updates
@@ -41,26 +34,15 @@ jobs:
                 local url="https://registry-1.docker.io/v2/${repository}/tags/list?n=1000"
                 local headers
                 local response
-                local docker_auth
 
                 ALL_TAGS_JSON=""
-
-                docker_auth=$(jq -r '.auths["https://index.docker.io/v1/"].auth // empty' ~/.docker/config.json)
-
-                if [ -z "$docker_auth" ]; then
-                    echo "Error: Docker authentication credentials not found." >&2
-                    cat ~/.docker/config.json >&2
-                    return 1
-                fi
 
                 while [ -n "$url" ]; do
                     echo "Fetching: $url" >&2
 
                     headers=$(mktemp)
 
-                    response=$(curl -sS -D "$headers" \
-                        -u "$(echo "$docker_auth" | base64 -d)" \
-                        "$url")
+                    response=$(curl -sS -D "$headers" "$url")
 
                     if ! echo "$response" | jq -e '.tags' >/dev/null 2>&1; then
                         echo "Error fetching Docker Hub tags:" >&2
