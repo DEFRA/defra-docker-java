@@ -28,27 +28,14 @@ jobs:
 
       - name: Check for updates
         id: check-updates
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_OIDC_USERNAME }}
         run: |
             fetch_all_tags() {
                 local repository="library/eclipse-temurin"
                 local url="https://registry-1.docker.io/v2/${repository}/tags/list?n=1000"
                 local headers
                 local response
-                local docker_auth
-                local docker_token
 
                 ALL_TAGS_JSON=""
-
-                docker_auth=$(jq -r '.auths["https://index.docker.io/v1/"].auth' ~/.docker/config.json)
-
-                if [ -z "$docker_auth" ] || [ "$docker_auth" = "null" ]; then
-                    echo "Error: Docker authentication credentials not found." >&2
-                    return 1
-                fi
-
-                docker_token=$(echo "$docker_auth" | base64 -d | cut -d: -f2-)
 
                 while [ -n "$url" ]; do
                     echo "Fetching: $url" >&2
@@ -56,7 +43,6 @@ jobs:
                     headers=$(mktemp)
 
                     response=$(curl -sS -D "$headers" \
-                        -u "${DOCKER_USERNAME}:${docker_token}" \
                         "$url")
 
                     if ! echo "$response" | jq -e '.tags' >/dev/null 2>&1; then
