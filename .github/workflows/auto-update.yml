@@ -19,37 +19,40 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Get Docker Hub OIDC token
-        id: dockerOidc
-        uses: docker/oidc-action@b048fb089ace3e15a5fbdd784f4784d284ce5e8d # v1.1.0
-        with:
-          connection-id: ${{ secrets.DOCKER_HUB_OIDC_CONNECTION_ID }}
-
       - name: Login to DockerHub
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         env:
           DOCKERHUB_OIDC_CONNECTIONID: ${{ secrets.DOCKERHUB_OIDC_CONNECTIONID }}
         with:
           username: ${{ secrets.DOCKER_OIDC_USERNAME }}
-          password: ${{ steps.dockerOidc.outputs.token }}
 
       - name: Check for updates
         id: check-updates
-        env:
-          DOCKER_OIDC_USERNAME: ${{ secrets.DOCKER_OIDC_USERNAME }}
-          DOCKER_OIDC_TOKEN: ${{ steps.dockerOidc.outputs.token }}
         run: |
             fetch_all_tags() {
-                local url="https://hub.docker.com/v2/repositories/library/eclipse-temurin/tags?page_size=100"
+                local url="https://hub.docker.com/v2/repositories/library/eclipse-temurin/tags?page_size=1000"
                 local response
+                local auth
+                local credentials
 
                 ALL_TAGS_JSON=""
+
+                auth=$(jq -r \
+                    '.auths["https://index.docker.io/v1/"].auth // .auths["https://registry-1.docker.io"].auth // empty' \
+                    ~/.docker/config.json)
+
+                if [ -z "$auth" ]; then
+                    echo "Error: Docker Hub credentials not found." >&2
+                    return 1
+                fi
+
+                credentials=$(echo "$auth" | base64 -d)
 
                 while [ -n "$url" ]; do
                     echo "Fetching: $url" >&2
 
                     response=$(curl -sS \
-                        -u "${DOCKER_OIDC_USERNAME}:${DOCKER_OIDC_TOKEN}" \
+                        -u "$credentials" \
                         "$url")
 
                     if ! echo "$response" | jq -e '.results' >/dev/null 2>&1; then
@@ -230,4 +233,3 @@ jobs:
             sign-commits: true
             commit-message: ${{ env.pull_request_title }}
             team-reviewers: ${{ vars.PR_REVIEW_TEAM }}
-            
