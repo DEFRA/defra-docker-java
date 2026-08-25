@@ -19,12 +19,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Get Docker Hub OIDC token
+        id: dockerOidc
+        uses: docker/oidc-action@b048fb089ace3e15a5fbdd784f4784d284ce5e8d # v1.1.0
+        with:
+          connection-id: ${{ secrets.DOCKER_HUB_OIDC_CONNECTION_ID }}
+
       - name: Login to DockerHub
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         env:
           DOCKERHUB_OIDC_CONNECTIONID: ${{ secrets.DOCKERHUB_OIDC_CONNECTIONID }}
         with:
           username: ${{ secrets.DOCKER_OIDC_USERNAME }}
+          password: ${{ steps.dockerOidc.outputs.token }}
 
       - name: Check for updates
         id: check-updates
@@ -34,8 +41,17 @@ jobs:
                 local url="https://registry-1.docker.io/v2/${repository}/tags/list?n=1000"
                 local headers
                 local response
+                local docker_auth
 
                 ALL_TAGS_JSON=""
+
+                docker_auth=$(jq -r '.auths["https://index.docker.io/v1/"].auth // empty' ~/.docker/config.json)
+
+                if [ -z "$docker_auth" ]; then
+                    echo "Error: Docker authentication credentials not found." >&2
+                    cat ~/.docker/config.json >&2
+                    return 1
+                fi
 
                 while [ -n "$url" ]; do
                     echo "Fetching: $url" >&2
@@ -43,6 +59,7 @@ jobs:
                     headers=$(mktemp)
 
                     response=$(curl -sS -D "$headers" \
+                        -u "$(echo "$docker_auth" | base64 -d)" \
                         "$url")
 
                     if ! echo "$response" | jq -e '.tags' >/dev/null 2>&1; then
@@ -124,6 +141,7 @@ jobs:
         run: |
             tmp_job_env=$(mktemp)
             tmp_dockerfile=$(mktemp)
+
             echo "Updates are needed"
             echo "$current_version"
             echo "$latest_version"
@@ -143,6 +161,7 @@ jobs:
             else
                 echo "❌ image-matrix.json was not updated."
             fi
+
             rm "${tmp_job_env}.matrix.bak"
 
             latest_java_version=$(jq -r '.[] | select(.tags[] == "latest") | .runtimeVersion' image-matrix.json)
@@ -152,6 +171,7 @@ jobs:
 
             sed "s/^BASE_VERSION=.*/BASE_VERSION=${latest_java_version}/" JOB.env > "$tmp_job_env"
             mv "$tmp_job_env" JOB.env
+
             sed "s/^DEFRA_VERSION=.*/DEFRA_VERSION=${new_defra_version}/" JOB.env > "$tmp_job_env"
             mv "$tmp_job_env" JOB.env
 
@@ -160,12 +180,14 @@ jobs:
             else
                 echo "❌ JOB.env was not updated."
             fi
+
             rm "${tmp_job_env}.bak"
 
             cp Dockerfile "${tmp_dockerfile}.bak"
 
             sed "s/^ARG BASE_VERSION=.*/ARG BASE_VERSION=${latest_java_version}/" Dockerfile > "$tmp_dockerfile"
             mv "$tmp_dockerfile" Dockerfile
+
             sed "s/^ARG DEFRA_VERSION=.*/ARG DEFRA_VERSION=${new_defra_version}/" Dockerfile > "$tmp_dockerfile"
             mv "$tmp_dockerfile" Dockerfile
 
@@ -174,6 +196,7 @@ jobs:
             else
                 echo "❌ Dockerfile was not updated."
             fi
+
             rm "${tmp_dockerfile}.bak"
 
       - name: Prepare pull request details
