@@ -1,24 +1,15 @@
-name: AUTO-UPDATE
+name: DOCKER-AUTH-TEST
 
 permissions:
-    id-token: write
-    contents: write
+  id-token: write
 
 on:
-    schedule:
-      - cron: '0 2 * * *'
-    workflow_dispatch:
-    push:
-      branches:
-        - main
+  workflow_dispatch:
 
 jobs:
-  check-and-update:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
       - name: Login to DockerHub
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         env:
@@ -26,6 +17,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_OIDC_USERNAME }}
 
-      - name: Verify DockerHub authentication
+      - name: Verify Docker login
         run: |
           docker info
+
+      - name: Query Docker Registry tags
+        run: |
+          curl -fsSL \
+            https://registry-1.docker.io/v2/library/eclipse-temurin/tags/list \
+            | jq .
