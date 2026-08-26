@@ -33,27 +33,14 @@ jobs:
             fetch_all_tags() {
                 local registry="https://registry-1.docker.io"
                 local repository="library/eclipse-temurin"
-                local url="$registry/v2/$repository/tags/list"
+                local url="$registry/v2/$repository/tags/list?n=1000"
                 local auth_header
                 local realm
                 local service
                 local scope
                 local token
-                local username
-                local password
-                local auth
 
                 ALL_TAGS_JSON=""
-
-                auth=$(jq -r '.auths["https://index.docker.io/v1/"].auth // .auths["https://registry-1.docker.io"].auth // empty' ~/.docker/config.json)
-
-                if [ -z "$auth" ]; then
-                    echo "Error: Docker Hub authentication credentials not found." >&2
-                    return 1
-                fi
-
-                username=$(echo "$auth" | base64 -d | cut -d: -f1)
-                password=$(echo "$auth" | base64 -d | cut -d: -f2-)
 
                 auth_header=$(curl -sSI "$url" | grep -i '^www-authenticate:' | tr -d '\r')
 
@@ -62,7 +49,6 @@ jobs:
                 scope=$(echo "$auth_header" | sed -n 's/.*scope="\([^"]*\)".*/\1/p')
 
                 token=$(curl -fsSL \
-                    --user "$username:$password" \
                     --get \
                     --data-urlencode "service=$service" \
                     --data-urlencode "scope=$scope" \
@@ -81,11 +67,11 @@ jobs:
                         -H "Authorization: Bearer $token" \
                         "$url")
 
-                    ALL_TAGS_JSON+=$(echo "$response" | jq -c '.tags[]')$'\n'
+                    ALL_TAGS_JSON+=$(echo "$response" | jq -r '.tags[]')$'\n'
 
                     tag_count=$(echo "$response" | jq '.tags | length')
 
-                    if [ "$tag_count" -eq 0 ] || [ "$tag_count" -lt 1000 ]; then
+                    if [ "$tag_count" -lt 1000 ]; then
                         break
                     fi
 
@@ -105,7 +91,7 @@ jobs:
                     return 1
                 fi
 
-                version=$(echo "$ALL_TAGS_JSON" | jq -r \
+                version=$(echo "$ALL_TAGS_JSON" | jq -Rr \
                     "select(startswith(\"$major_version.\") and
                             contains(\"-$runtime_type-$base_image\"))" |
                     sort -V | tail -n 1)
