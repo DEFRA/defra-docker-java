@@ -50,9 +50,11 @@ Other tags are also pushed to allow pointing at the latest image for that jdk/sd
 
 On commit GitHub Actions will build the `java` image for the Java versions listed in the [image-matrix.json](image-matrix.json) file, and perform a vulnerability scan, as described below.
 
-In addition a commit to the master branch will push the images to the [defradigital](https://hub.docker.com/u/defradigital) organisation in Docker Hub using the version tag specified in the [JOB.env](JOB.env) file. This version tag is expected to be manually updated on each release.
+In addition a commit to the `main` branch will push the images to the [defradigital](https://hub.docker.com/u/defradigital) organisation in Docker Hub using the version tag specified in the [JOB.env](JOB.env) file. This version tag is expected to be manually updated on each release.
 
 The Java version marked as `latest` in the [image-matrix.json](image-matrix.json) will be tagged as the `latest` image in Docker Hub.
+
+Docker Hub authentication uses GitHub Actions OIDC. The `main` branch publishes production images to `java`, while `platform-test/*` branches publish development images to `java-development`. Other branches build and scan images but do not publish.
 
 ## Image vulnerability scanning
 
@@ -74,6 +76,6 @@ The following attribution statement MUST be cited in your products and applicati
 
 ### About the licence
 
-The Open Government Licence (OGL) was developed by the Controller of Her Majesty's Stationery Office (HMSO) to enable information providers in the public sector to license the use and re-use of their information under a common open licence.
+The Open Government Licence (OGL) was developed by the Controller of Her Majesty's Stationery Office (HMSO) to enable information providers in the public sector to license the use and re-use of information under a common open licence.
 
 It is designed to encourage use and re-use of information freely and flexibly, with only a few conditions.
