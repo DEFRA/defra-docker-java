@@ -5,13 +5,12 @@ on:
     - cron: '0 1 * * *'
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
   get-matrix-values:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     outputs:
       image: ${{ steps.set-var.outputs.image }}
     steps:
@@ -25,24 +24,18 @@ jobs:
 
   scan:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     needs: get-matrix-values
     strategy:
       fail-fast: false
       matrix:
         image: ${{fromJSON(needs.get-matrix-values.outputs.image)}}
+
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Set job environment variables
-        run: cat JOB.env >> $GITHUB_ENV
-
       - name: Run Anchore Grype scan
         id: grype-scan
         uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
         with:
-          image: defradigital/${{env.IMAGE_NAME}}:${{env.DEFRA_VERSION}}-java${{matrix.image.runtimeVersion}}
+          image: defradigital/java:${{ matrix.image.tags[0] }}
           fail-build: false
           severity-cutoff: "medium"
           output-format: json
@@ -52,24 +45,26 @@ jobs:
         id: trivy-scan
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
-          image-ref: defradigital/${{env.IMAGE_NAME}}:${{env.DEFRA_VERSION}}-java${{matrix.image.runtimeVersion}}
+          image-ref: defradigital/java:${{ matrix.image.tags[0] }}
           format: json
-          output: trivy-java-${{ matrix.image.runtimeVersion }}.json
+          output: trivy-java-${{ matrix.image.tags[0] }}.json
           exit-code: 0
           vuln-type: os,library
           severity: CRITICAL,HIGH,MEDIUM
         continue-on-error: true
 
       - name: Upload Grype report
+        if: steps.grype-scan.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: grype-java-${{ matrix.image.runtimeVersion }}
+          name: grype-java-${{ matrix.image.tags[0] }}
           path: ${{ steps.grype-scan.outputs.json }}
           if-no-files-found: ignore
 
       - name: Upload Trivy report
+        if: steps.trivy-scan.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: trivy-java-${{ matrix.image.runtimeVersion }}
-          path: trivy-java-${{ matrix.image.runtimeVersion }}.json
+          name: trivy-java-${{ matrix.image.tags[0] }}
+          path: trivy-java-${{ matrix.image.tags[0] }}.json
           if-no-files-found: ignore
