@@ -5,6 +5,9 @@ permissions:
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   test:
@@ -17,12 +20,53 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_OIDC_USERNAME }}
 
-      - name: Verify Docker login
+      - name: Verify DockerHub authentication
         run: |
           docker info
 
-      - name: Query Docker Registry tags
+      - name: Get Docker Registry token
+        id: registry-token
         run: |
+          registry="https://registry-1.docker.io"
+          repository="library/eclipse-temurin"
+
+          response=$(curl -sSI \
+            "$registry/v2/$repository/tags/list")
+
+          echo "$response"
+
+          auth_header=$(echo "$response" | grep -i '^www-authenticate:' | tr -d '\r')
+
+          if [ -z "$auth_header" ]; then
+            echo "No authentication challenge returned."
+            exit 1
+          fi
+
+          realm=$(echo "$auth_header" | sed -n 's/.*realm="\([^"]*\)".*/\1/p')
+          service=$(echo "$auth_header" | sed -n 's/.*service="\([^"]*\)".*/\1/p')
+          scope=$(echo "$auth_header" | sed -n 's/.*scope="\([^"]*\)".*/\1/p')
+
+          echo "Realm: $realm"
+          echo "Service: $service"
+          echo "Scope: $scope"
+
+          token=$(curl -fsSL \
+            --get \
+            --data-urlencode "service=$service" \
+            --data-urlencode "scope=$scope" \
+            "$realm" \
+            | jq -r '.token // .access_token')
+
+          if [ -z "$token" ] || [ "$token" = "null" ]; then
+            echo "Failed to obtain registry token."
+            exit 1
+          fi
+
+          echo "Registry token obtained."
+
+          echo "Querying tags..."
+
           curl -fsSL \
-            https://registry-1.docker.io/v2/library/eclipse-temurin/tags/list \
+            -H "Authorization: Bearer $token" \
+            "$registry/v2/$repository/tags/list" \
             | jq .
