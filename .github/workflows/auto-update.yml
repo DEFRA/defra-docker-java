@@ -29,4 +29,3 @@ jobs:
       - name: Verify DockerHub authentication
         run: |
           docker info
-          docker pull eclipse-temurin:latest
