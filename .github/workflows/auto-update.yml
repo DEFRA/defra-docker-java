@@ -31,13 +31,29 @@ jobs:
         run: |
             # Tags are spread over multiple pages. Collate all pages and cache.
             fetch_all_tags() {
-                local url="https://registry-1.docker.io/v2/library/eclipse-temurin/tags/list?n=1000"
+                local registry="https://registry-1.docker.io"
+                local repository="library/eclipse-temurin"
+                local url="$registry/v2/$repository/tags/list?n=1000"
+                local auth_header
+                local realm
+                local service
+                local scope
                 local token
+
                 ALL_TAGS_JSON=""
 
+                auth_header=$(curl -sSI "$url" | grep -i '^www-authenticate:' | tr -d '\r')
+
+                realm=$(echo "$auth_header" | sed -n 's/.*realm="\([^"]*\)".*/\1/p')
+                service=$(echo "$auth_header" | sed -n 's/.*service="\([^"]*\)".*/\1/p')
+                scope=$(echo "$auth_header" | sed -n 's/.*scope="\([^"]*\)".*/\1/p')
+
                 token=$(curl -fsSL \
-                    "https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/eclipse-temurin:pull" |
-                    jq -r '.token')
+                    --get \
+                    --data-urlencode "service=$service" \
+                    --data-urlencode "scope=$scope" \
+                    "$realm" |
+                    jq -r '.token // .access_token')
 
                 if [ -z "$token" ] || [ "$token" = "null" ]; then
                     echo "Error: Failed to obtain Docker Registry token." >&2
@@ -47,18 +63,20 @@ jobs:
                 while [ -n "$url" ] && [ "$url" != "null" ]; do
                     echo "Fetching: $url" >&2
 
-                    response_headers=$(mktemp)
                     response=$(curl -fsSL \
-                        -D "$response_headers" \
                         -H "Authorization: Bearer $token" \
                         "$url")
 
                     ALL_TAGS_JSON+=$(echo "$response" | jq -r '.tags[]')$'\n'
 
-                    url=$(grep -i '^link:' "$response_headers" |
-                        sed -n 's/.*<\([^>]*\)>;[[:space:]]*rel="next".*/\1/p')
+                    tag_count=$(echo "$response" | jq '.tags | length')
 
-                    rm -f "$response_headers"
+                    if [ "$tag_count" -lt 1000 ]; then
+                        break
+                    fi
+
+                    last_tag=$(echo "$response" | jq -r '.tags[-1]')
+                    url="$registry/v2/$repository/tags/list?n=1000&last=$(printf '%s' "$last_tag" | jq -sRr @uri)"
                 done
             }
 
@@ -73,9 +91,9 @@ jobs:
                     return 1
                 fi
 
-                version=$(echo "$ALL_TAGS_JSON" | jq -r \
+                version=$(echo "$ALL_TAGS_JSON" | jq -Rr \
                     "select(startswith(\"$major_version.\") and
-                                    contains(\"-$runtime_type-$base_image\"))" |
+                            contains(\"-$runtime_type-$base_image\"))" |
                     sort -V | tail -n 1)
 
                 if [ -z "$version" ]; then
@@ -175,13 +193,13 @@ jobs:
             # Update Dockerfile
             # Create backup of Dockerfile
             cp Dockerfile "${tmp_dockerfile}.bak"
-
+            
             # Make changes to Dockerfile
             sed "s/^ARG BASE_VERSION=.*/ARG BASE_VERSION=${latest_java_version}/" Dockerfile > "$tmp_dockerfile"
             mv "$tmp_dockerfile" Dockerfile
             sed "s/^ARG DEFRA_VERSION=.*/ARG DEFRA_VERSION=${new_defra_version}/" Dockerfile > "$tmp_dockerfile"
             mv "$tmp_dockerfile" Dockerfile
-
+            
             # Check if Dockerfile was actually changed
             if ! cmp -s Dockerfile "${tmp_dockerfile}.bak"; then
                 echo "✅ Updated Dockerfile"
