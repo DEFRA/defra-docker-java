@@ -1,5 +1,9 @@
 name: AUTO-UPDATE
 
+permissions:
+    id-token: write
+    contents: write
+
 on:
     schedule:
       - cron: '0 2 * * *'
@@ -15,20 +19,64 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Login to DockerHub
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        env:
+          DOCKERHUB_OIDC_CONNECTIONID: ${{ secrets.DOCKERHUB_OIDC_CONNECTIONID }}
+        with:
+          username: ${{ secrets.DOCKER_OIDC_USERNAME }}
+
       - name: Check for updates
         id: check-updates
         run: |
-            # Tags are spread over multiple pages. Colate all pages and cache.      
+            # Tags are spread over multiple pages. Collate all pages and cache.
             fetch_all_tags() {
-                local url="https://hub.docker.com/v2/repositories/library/eclipse-temurin/tags?page_size=100"
+                local registry="https://registry-1.docker.io"
+                local repository="library/eclipse-temurin"
+                local url="$registry/v2/$repository/tags/list?n=1000"
+                local auth_header
+                local realm
+                local service
+                local scope
+                local token
+
                 ALL_TAGS_JSON=""
 
-                while [ -n "$url" ]; do
+                auth_header=$(curl -sSI "$url" | grep -i '^www-authenticate:' | tr -d '\r')
+
+                realm=$(echo "$auth_header" | sed -n 's/.*realm="\([^"]*\)".*/\1/p')
+                service=$(echo "$auth_header" | sed -n 's/.*service="\([^"]*\)".*/\1/p')
+                scope=$(echo "$auth_header" | sed -n 's/.*scope="\([^"]*\)".*/\1/p')
+
+                token=$(curl -fsSL \
+                    --get \
+                    --data-urlencode "service=$service" \
+                    --data-urlencode "scope=$scope" \
+                    "$realm" |
+                    jq -r '.token // .access_token')
+
+                if [ -z "$token" ] || [ "$token" = "null" ]; then
+                    echo "Error: Failed to obtain Docker Registry token." >&2
+                    return 1
+                fi
+
+                while [ -n "$url" ] && [ "$url" != "null" ]; do
                     echo "Fetching: $url" >&2
-                    response=$(curl -s "$url")
-                    ALL_TAGS_JSON+=$(echo "$response" | jq -c '.results[]')$'\n'
-                    url=$(echo "$response" | jq -r '.next')
-                    [[ "$url" == "null" ]] && break
+
+                    response=$(curl -fsSL \
+                        -H "Authorization: Bearer $token" \
+                        "$url")
+
+                    ALL_TAGS_JSON+=$(echo "$response" | jq -r '.tags[]')$'\n'
+
+                    tag_count=$(echo "$response" | jq '.tags | length')
+
+                    if [ "$tag_count" -lt 1000 ]; then
+                        break
+                    fi
+
+                    last_tag=$(echo "$response" | jq -r '.tags[-1]')
+                    url="$registry/v2/$repository/tags/list?n=1000&last=$(printf '%s' "$last_tag" | jq -sRr @uri)"
                 done
             }
 
@@ -43,10 +91,10 @@ jobs:
                     return 1
                 fi
 
-                version=$(echo "$ALL_TAGS_JSON" | jq -r \
-                    "select(.name | startswith(\"$major_version.\") and
-                                    contains(\"-$runtime_type-$base_image\")) |
-                    .name" | sort -V | tail -n 1)
+                version=$(echo "$ALL_TAGS_JSON" | jq -Rr \
+                    "select(startswith(\"$major_version.\") and
+                            contains(\"-$runtime_type-$base_image\"))" |
+                    sort -V | tail -n 1)
 
                 if [ -z "$version" ]; then
                     echo "Error: No matching version found" >&2
