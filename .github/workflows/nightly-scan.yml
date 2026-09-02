@@ -78,7 +78,7 @@ jobs:
     if: always()
     env:
       GH_TOKEN: ${{ github.token }}
-      LABEL: security-scan
+      LABEL: enhancement
       TITLE: "Nightly vulnerability scan"
       REVIEW_TEAM: ${{ vars.PR_REVIEW_TEAM }}
     steps:
