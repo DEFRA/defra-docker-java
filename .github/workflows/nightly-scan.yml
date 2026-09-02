@@ -149,7 +149,7 @@ jobs:
             if [ -s "$1" ]; then
               echo "| Severity | ID | Package | Installed | Fix | Reason |"
               echo "|---|---|---|---|---|---|"
-              awk -F'\t' '{print "| "$1" | "$2" | "$3" | "$4" | "$6" | "$8" |"}' "$1" | head 20
+              awk -F'\t' '{print "| "$1" | "$2" | "$3" | "$4" | "$6" | "$8" |"}' "$1" | head -20
             else
               echo "_None._"
             fi
