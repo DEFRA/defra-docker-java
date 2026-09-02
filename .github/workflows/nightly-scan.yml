@@ -78,7 +78,7 @@ jobs:
     if: always()
     env:
       GH_TOKEN: ${{ github.token }}
-      LABEL: security-scan
+      LABEL: enhancement
       TITLE: "Nightly vulnerability scan"
       REVIEW_TEAM: ${{ vars.PR_REVIEW_TEAM }}
     steps:
@@ -163,14 +163,14 @@ jobs:
             echo "Cleared by merging the automated base-image / npm update PR, or by bumping the affected package."
             echo
             render_fixable fixable.tsv
-            echo
-            echo "## Awareness (${awareness_count})"
-            echo
-            echo "Tracked for visibility only, never pages the review team. See Reason for why"
-            echo "each one isn't gated: no upstream fix yet, or, for npm-bundled dependencies,"
-            echo "the fix exists in the library but npm hasn't shipped a release bundling it."
-            echo
-            render_awareness awareness.tsv
+            # echo
+            # echo "## Awareness (${awareness_count})"
+            # echo
+            # echo "Tracked for visibility only, never pages the review team. See Reason for why"
+            # echo "each one isn't gated: no upstream fix yet, or, for npm-bundled dependencies,"
+            # echo "the fix exists in the library but npm hasn't shipped a release bundling it."
+            # echo
+            # render_awareness awareness.tsv
           } > body.md
 
           echo "fixable_count=$fixable_count" >> $GITHUB_OUTPUT
