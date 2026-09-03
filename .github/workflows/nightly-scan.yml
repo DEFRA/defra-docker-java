@@ -94,62 +94,77 @@ jobs:
       - name: Build findings summary
         id: summary
         run: |
-          : > findings.tsv
-
-          for f in artifacts/grype-java-*/*.json; do
-            [ -e "$f" ] || continue
-            jq -r '
-              (.matches // [])[] |
-              [ (.vulnerability.severity // "Unknown" | ascii_upcase),
-                (.vulnerability.id // ""),
-                (.artifact.name // ""),
-                (.artifact.version // ""),
-                (if (.vulnerability.fix.state // "") == "fixed" then "yes" else "no" end),
-                ((.vulnerability.fix.versions // []) | join(",")),
-                ((.artifact.locations // []) | map(.path) | join(",")) ] | @tsv
-            ' "$f" >> findings.tsv || true
+          for d in artifacts/grype-java-*; do
+            build=$(echo $d | sed 's/grype\-//g')
+            for f in artifacts/grype-java-*/output; do            
+              [ -e "$f" ] || continue
+              jq --arg build "$build" -r '
+                (.matches // [])[] |
+                [ 
+                  ($build),
+                  (.vulnerability.severity // "Unknown" | ascii_upcase),
+                  (.vulnerability.id // ""),
+                  (.artifact.name // ""),
+                  (.artifact.version // ""),
+                  (if (.vulnerability.fix.state // "") == "fixed" then "FIX_AVAILABLE" else "FIX_NOT_AVAILABLE" end),
+                  ((.vulnerability.fix.versions // []) | join(",")),
+                  ((.artifact.locations // []) | map(.path) | join(",")) 
+                ] | @tsv
+              ' "$f" >> findings.tsv || true
+            done
+          done
+          
+          for d in artifacts/trivy-java-*; do
+            build=$(echo $d | sed 's/trivy\-//g')
+            for f in artifacts/trivy-java-*/*.json; do
+              [ -e "$f" ] || continue
+              jq --arg build "$build" -r '
+                (.Results // [])[] | . as $result | ($result.Vulnerabilities // [])[] |
+                [ 
+                  ($build),
+                  (.Severity // "UNKNOWN" | ascii_upcase),
+                  (.VulnerabilityID // ""),
+                  (.PkgName // ""),
+                  (.InstalledVersion // ""),
+                  (if (.FixedVersion // "") != "" then "FIX_AVAILABLE" else "FIX_NOT_AVAILABLE" end),
+                  (.FixedVersion // ""),
+                  (($result.Target // "") + "," + (.PkgPath // "")) 
+                ] | @tsv
+              ' "$f" >> findings.tsv || true
+            done
           done
 
-          for f in artifacts/trivy-java-*/*.json; do
-            [ -e "$f" ] || continue
-            jq -r '
-              (.Results // [])[] | . as $result | ($result.Vulnerabilities // [])[] |
-              [ (.Severity // "UNKNOWN" | ascii_upcase),
-                (.VulnerabilityID // ""),
-                (.PkgName // ""),
-                (.InstalledVersion // ""),
-                (if (.FixedVersion // "") != "" then "yes" else "no" end),
-                (.FixedVersion // ""),
-                (($result.Target // "") + "," + (.PkgPath // "")) ] | @tsv
-            ' "$f" >> findings.tsv || true
-          done
+          grep -E '(MEDIUM|HIGH|CRITICAL)	' findings.tsv | sort -u > medplus.tsv || true
 
-          grep -E '^(MEDIUM|HIGH|CRITICAL)	' findings.tsv | sort -u > medplus.tsv || true
-          awk -F'\t' -v p="$EXCLUDED_PATH" 'index($7, p) == 0 && $5 == "yes"' medplus.tsv > fixable.tsv || true
-          awk -F'\t' -v p="$EXCLUDED_PATH" 'BEGIN{OFS="\t"}
-            index($7, p) != 0 { print $0, "npm bundles this dependency itself; needs a new npm release, not just a newer library"; next }
-            $5 == "no" { print $0, "no fix available" }
-          ' medplus.tsv > awareness.tsv || true
+          cat medplus.tsv | grep FIX_AVAILABLE > fix_available.tsv
+          fix_available_count=$(cat fix_available.tsv | wc -l)
+          cat medplus.tsv | grep FIX_NOT_AVAILABLE > fix_not_available.tsv
+          fix_not_available_count=$(cat fix_not_available.tsv | wc -l)
+          total=$((fix_available_count + fix_not_available_count))        
+          builds=$(cat medplus.tsv | awk -F'\t' '{print $1}' | sort -u)
+          limit=5
 
-          fixable_count=$(wc -l < fixable.tsv | tr -d ' ')
-          awareness_count=$(wc -l < awareness.tsv | tr -d ' ')
-          total=$((fixable_count + awareness_count))
-
-          render_fixable() {
-            if [ -s "$1" ]; then
-              echo "| Severity | ID | Package | Installed | Fix |"
-              echo "|---|---|---|---|---|"
-              awk -F'\t' '{print "| "$1" | "$2" | "$3" | "$4" | "$6" |"}' "$1"
+          render_fix_available() {
+            file="fix_available.tsv"
+            if [ -s "$file" ]; then
+              for build in $builds; do
+                echo "| Severity | ID | Package | Current Version | Fixed Version |"
+                echo "|---|---|---|---|---|"
+                cat "$file" | grep $build | awk -F'\t' '{print "| "$2" | "$3" | "$4" | "$5" | "$7" |"}' | head -$limit
+              done
             else
               echo "_None._"
             fi
           }
 
-          render_awareness() {
-            if [ -s "$1" ]; then
-              echo "| Severity | ID | Package | Installed | Fix | Reason |"
-              echo "|---|---|---|---|---|---|"
-              awk -F'\t' '{print "| "$1" | "$2" | "$3" | "$4" | "$6" | "$8" |"}' "$1" | head -20
+          render_fix_not_available() {
+            file="fix_not_available.tsv"
+            if [ -s "$file" ]; then
+              for build in $builds; do
+                echo "| Severity | ID | Package | Current Version|"
+                echo "|---|---|---|---|---|---|"
+                cat "$file" | grep $build | awk -F'\t' '{print "| "$2" | "$3" | "$4" | "$5" |"}' | head -$limit
+              done
             else
               echo "_None._"
             fi
@@ -157,23 +172,18 @@ jobs:
 
           {
             echo "_Updated $(date -u '+%Y-%m-%d %H:%M UTC') from the nightly scan of the published images._"
+            echo "There are $total medium to high results accross $(wc -l $builds) images."
+            echo 
+            echo "## Fix available (first $limit of $fix_available_count)"
             echo
-            echo "## Actionable — fix available (${fixable_count})"
+            render_fix_available
             echo
-            echo "Cleared by merging the automated base-image or by bumping the affected package."
+            echo "## No fix available (first $limit of $fix_not_available_count)"
             echo
-            render_fixable fixable.tsv
-            echo
-            echo "## Awareness (${awareness_count})"
-            echo
-            echo "Tracked for visibility only, never pages the review team. See Reason for why"
-            echo "each one isn't gated: no upstream fix yet, or, for npm-bundled dependencies,"
-            echo "the fix exists in the library but npm hasn't shipped a release bundling it."
-            echo
-            render_awareness awareness.tsv
+            render_fix_not_available
           } > body.md
 
-          echo "fixable_count=$fixable_count" >> $GITHUB_OUTPUT
+          echo "fix_available_count=$fix_available_count" >> $GITHUB_OUTPUT
           echo "total=$total" >> $GITHUB_OUTPUT
 
       - name: Update tracking issue
