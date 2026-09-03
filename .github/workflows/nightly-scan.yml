@@ -135,6 +135,7 @@ jobs:
           done
 
           total=$(cat findings.tsv | wc -l)
+          fixable_count=$(cat findings.tsv | grep FIX_AVAILABLE | wc -l)
           builds=$(cat findings.tsv | awk -F'\t' '{print $1}' | sort -u)
           
           render_output() {
@@ -170,7 +171,7 @@ jobs:
             echo
           } > body.md
 
-          echo "fix_available_count=$fix_available_count" >> $GITHUB_OUTPUT
+          echo "fixable_count=$fixable_count" >> $GITHUB_OUTPUT
           echo "total=$total" >> $GITHUB_OUTPUT
 
       - name: Update tracking issue
