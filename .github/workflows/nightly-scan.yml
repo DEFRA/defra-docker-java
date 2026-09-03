@@ -95,7 +95,7 @@ jobs:
         id: summary
         run: |
           for d in artifacts/grype-java-*; do
-            build=$(echo $d | sed 's/grype\-//g')
+            build=$(echo $d | sed 's/artifacts\/grype\-//g')
             for f in artifacts/grype-java-*/output; do
               [ -e "$f" ] || continue
               jq --arg build "$build" -r '
@@ -115,7 +115,7 @@ jobs:
           done
           
           for d in artifacts/trivy-java-*; do
-            build=$(echo $d | sed 's/trivy\-//g')
+            build=$(echo $d | sed 's/artifacts\/trivy\-//g')
             for f in artifacts/trivy-java-*/*.json; do
               [ -e "$f" ] || continue
               jq --arg build "$build" -r '
@@ -146,16 +146,18 @@ jobs:
                 build_critical=$(cat $file | grep $build | grep CRITICAL | wc -l)
                 build_high=$(cat $file | grep $build | grep HIGH | wc -l)
                 build_medium=$(cat $file | grep $build | grep MEDIUM | wc -l)
-                build_fix_available=$(cat $file | grep $build | grep FIX_AVIALABLE | wc -l)
-                build_fix_not_available=$(cat $file | grep $build | grep FIX_NOT_AVIALABLE | wc -l)
-                grype_url=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq '.artifacts[]|select(.name|test("grype-$build$")).archive_download_url')
-                trivy_url=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq '.artifacts[]|select(.name|test("trivy-$build$")).archive_download_url')
+                build_fix_available=$(cat $file | grep $build | grep FIX_AVAILABLE | wc -l)
+                build_fix_not_available=$(cat $file | grep $build | grep FIX_NOT_AVAILABLE | wc -l)
+                grype_id=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq '.artifacts[]|select(.name|test("grype-$build$")).id')
+                trivy_id=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq '.artifacts[]|select(.name|test("trivy-$build$")).id')
+                grype_url="https://${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/${grype_id}"
+                trivy_url="https://${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/${trivy_id}"
                 echo "### $build"
                 echo "[Grype](${grype_url})"
                 echo "[Trivy](${trivy_url})"
                 echo "| Total | Critical | High | Medium | Fix Available | No Fix Available |"
                 echo "|---|---|---|---|---|---|"
-                echo "|$build_total|$build_critical|$build_high|$build_medium|$build_fix_available|build_fix_not_available|"
+                echo "|$build_total|$build_critical|$build_high|$build_medium|$build_fix_available|$build_fix_not_available|"
                 echo
               done
             else
