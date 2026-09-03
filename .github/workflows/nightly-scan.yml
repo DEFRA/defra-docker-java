@@ -96,7 +96,7 @@ jobs:
         run: |
           for d in artifacts/grype-java-*; do
             build=$(echo $d | sed 's/grype\-//g')
-            for f in artifacts/grype-java-*/output; do            
+            for f in artifacts/grype-java-*/output; do
               [ -e "$f" ] || continue
               jq --arg build "$build" -r '
                 (.matches // [])[] |
@@ -134,36 +134,28 @@ jobs:
             done
           done
 
-          grep -E '(MEDIUM|HIGH|CRITICAL)	' findings.tsv | sort -u > medplus.tsv || true
-
-          cat medplus.tsv | grep FIX_AVAILABLE > fix_available.tsv
-          fix_available_count=$(cat fix_available.tsv | wc -l)
-          cat medplus.tsv | grep FIX_NOT_AVAILABLE > fix_not_available.tsv
-          fix_not_available_count=$(cat fix_not_available.tsv | wc -l)
-          total=$((fix_available_count + fix_not_available_count))        
-          builds=$(cat medplus.tsv | awk -F'\t' '{print $1}' | sort -u)
-          limit=5
-
-          render_fix_available() {
-            file="fix_available.tsv"
-            if [ -s "$file" ]; then
+          total=$(cat findings.tsv | wc -l)
+          builds=$(cat findings.tsv | awk -F'\t' '{print $1}' | sort -u)
+          
+          render_output() {
+            file="findings.tsv"
+            if [ -s "$file" ]; then              
               for build in $builds; do
-                echo "| Severity | ID | Package | Current Version | Fixed Version |"
-                echo "|---|---|---|---|---|"
-                cat "$file" | grep $build | awk -F'\t' '{print "| "$2" | "$3" | "$4" | "$5" | "$7" |"}' | head -$limit
-              done
-            else
-              echo "_None._"
-            fi
-          }
-
-          render_fix_not_available() {
-            file="fix_not_available.tsv"
-            if [ -s "$file" ]; then
-              for build in $builds; do
-                echo "| Severity | ID | Package | Current Version|"
+                build_total=$(cat $file | grep $build | wc -l)
+                build_critical=$(cat $file | grep $build | grep CRITICAL | wc -l)
+                build_high=$(cat $file | grep $build | grep HIGH | wc -l)
+                build_medium=$(cat $file | grep $build | grep MEDIUM | wc -l)
+                build_fix_available=$(cat $file | grep $build | grep FIX_AVIALABLE | wc -l)
+                build_fix_not_available=$(cat $file | grep $build | grep FIX_NOT_AVIALABLE | wc -l)
+                grype_url=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq '.artifacts[]|select(.name|test("grype-$build$")).archive_download_url')
+                trivy_url=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq '.artifacts[]|select(.name|test("trivy-$build$")).archive_download_url')
+                echo "### $build"
+                echo "[Grype](${grype_url})"
+                echo "[Trivy](${trivy_url})"
+                echo "| Total | Critical | High | Medium | Fix Available | No Fix Available |"
                 echo "|---|---|---|---|---|---|"
-                cat "$file" | grep $build | awk -F'\t' '{print "| "$2" | "$3" | "$4" | "$5" |"}' | head -$limit
+                echo "|$build_total|$build_critical|$build_high|$build_medium|$build_fix_available|build_fix_not_available|"
+                echo
               done
             else
               echo "_None._"
@@ -172,15 +164,10 @@ jobs:
 
           {
             echo "_Updated $(date -u '+%Y-%m-%d %H:%M UTC') from the nightly scan of the published images._"
-            echo "There are $total medium to high results accross $(wc -l $builds) images."
-            echo 
-            echo "## Fix available (first $limit of $fix_available_count)"
+            echo "There are $total vulnerabilities accross $(echo $builds | wc -l) images."
             echo
-            render_fix_available
+            render_output
             echo
-            echo "## No fix available (first $limit of $fix_not_available_count)"
-            echo
-            render_fix_not_available
           } > body.md
 
           echo "fix_available_count=$fix_available_count" >> $GITHUB_OUTPUT
