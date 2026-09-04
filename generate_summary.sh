@@ -56,16 +56,12 @@ render_output() {
         build_fix_available=$(cat $file | grep $build | grep FIX_AVAILABLE | wc -l)
         build_fix_not_available=$(cat $file | grep $build | grep FIX_NOT_AVAILABLE | wc -l)
         grype_id=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts | jq --arg BUILD "grype-${build}" '.artifacts[]|select(.name == $BUILD).id')
-        gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts | jq --arg BUILD "grype-${build}" '.artifacts[]|select(.name == $BUILD).id'
-        echo "GRYPE_ID:$grype_id"
         trivy_id=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts | jq --arg BUILD "trivy-${build}" '.artifacts[]|select(.name == $BUILD).id')
-        gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts | jq --arg BUILD "trivy-${build}" '.artifacts[]|select(.name == $BUILD).id'
-        echo "TRIVY_ID:$trivy_id"
         grype_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/${grype_id}"
         trivy_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/${trivy_id}"
         echo "### $build"
-        echo "[Grype](${grype_url})"
-        echo "[Trivy](${trivy_url})"
+        echo "[$grype_url](${grype_url})"
+        echo "[$trivy_url](${trivy_url})"
         echo "| Total | Critical | High | Medium | Fix Available | No Fix Available |"
         echo "|---|---|---|---|---|---|"
         echo "|$build_total|$build_critical|$build_high|$build_medium|$build_fix_available|$build_fix_not_available|"
