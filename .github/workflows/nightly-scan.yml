@@ -91,9 +91,17 @@ jobs:
           path: artifacts
         continue-on-error: true
 
-      - name: Build findings summary
+      - name: Build summary
         id: summary
         run: bash .github/scripts/generate_summary.sh
+
+      - name: Upload summary report
+        if: steps.summary.outcome == 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: summary.csv
+          path: summary.csv
+          if-no-files-found: ignore
 
       - name: Update tracking issue
         run: bash .github/scripts/update_issue.sh

@@ -17,7 +17,7 @@ for dir in artifacts/grype-java-*; do
         ((.vulnerability.fix.versions // []) | join(",")),
         ((.artifact.locations // []) | map(.path) | join(",")) 
     ] | @tsv
-    ' "$file" >> findings.tsv || true
+    ' "$file" >> summary.tsv || true
 done
 
 for dir in artifacts/trivy-java-*; do
@@ -37,15 +37,17 @@ for dir in artifacts/trivy-java-*; do
         (.FixedVersion // ""),
         (($result.Target // "") + "," + (.PkgPath // "")) 
     ] | @tsv
-    ' "$file" >> findings.tsv || true
+    ' "$file" >> summary.tsv || true
 done
 
-total=$(cat findings.tsv | wc -l)
-fixable_count=$(cat findings.tsv | grep FIX_AVAILABLE | wc -l)
-builds=$(cat findings.tsv | awk -F'\t' '{print $1}' | sort -u)
+total=$(cat summary.tsv | wc -l)
+fixable_count=$(cat summary.tsv | grep FIX_AVAILABLE | wc -l)
+builds=$(cat summary.tsv | awk -F'\t' '{print $1}' | sort -u)
+
+tr '\t' ',' < summary.tsv > summary.csv
 
 render_output() {
-    file="findings.tsv"
+    file="summary.tsv"
     if [ -s "$file" ]; then
         for build in $builds; do
             build_total=$(grep $build $file | wc -l)
