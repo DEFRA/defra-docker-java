@@ -15,13 +15,14 @@ for dir in artifacts/grype-java-*; do
         (.artifact.version // ""),
         (if (.vulnerability.fix.state // "") == "fixed" then "FIX_AVAILABLE" else "FIX_NOT_AVAILABLE" end),
         ((.vulnerability.fix.versions // []) | join(",")),
-        ((.artifact.locations // []) | map(.path) | join(",")) 
+        ((.artifact.locations // []) | map(.path) | join(",")),
+        ("grype")
     ] | @tsv
     ' "$file" >> summary.tsv || true
 done
 
 for dir in artifacts/trivy-java-*; do
-    build=$(echo $d | sed 's/artifacts\/trivy\-//g')
+    build=$(echo $dir | sed 's/artifacts\/trivy\-//g')
     file="artifacts/trivy-${build}/trivy-${build}.json"
     echo "Summarising ${file}..."
     [ -e "$file" ] || continue
@@ -35,7 +36,8 @@ for dir in artifacts/trivy-java-*; do
         (.InstalledVersion // ""),
         (if (.FixedVersion // "") != "" then "FIX_AVAILABLE" else "FIX_NOT_AVAILABLE" end),
         (.FixedVersion // ""),
-        (($result.Target // "") + "," + (.PkgPath // "")) 
+        (($result.Target // "") + "," + (.PkgPath // "")),
+        ("trivy")
     ] | @tsv
     ' "$file" >> summary.tsv || true
 done
