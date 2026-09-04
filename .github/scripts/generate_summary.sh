@@ -49,19 +49,19 @@ render_output() {
     file="findings.tsv"
     if [ -s "$file" ]; then              
         for build in $builds; do
-        build_total=$(cat $file | grep $build | wc -l)
-        build_critical=$(cat $file | grep $build | grep CRITICAL | wc -l)
-        build_high=$(cat $file | grep $build | grep HIGH | wc -l)
-        build_medium=$(cat $file | grep $build | grep MEDIUM | wc -l)
-        build_fix_available=$(cat $file | grep $build | grep FIX_AVAILABLE | wc -l)
-        build_fix_not_available=$(cat $file | grep $build | grep FIX_NOT_AVAILABLE | wc -l)
+        build_total=$(grep $build $file | wc -l)
+        build_critical=$(grep $build $file | grep CRITICAL | wc -l)
+        build_high=$(grep $build $file | grep HIGH | wc -l)
+        build_medium=$(grep $build $file | grep MEDIUM | wc -l)
+        build_fix_available=$(grep $build $file | grep FIX_AVAILABLE | wc -l)
+        build_fix_not_available=$(grep $build $file | grep FIX_NOT_AVAILABLE | wc -l)
         grype_id=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts | jq --arg BUILD "grype-${build}" '.artifacts[]|select(.name == $BUILD).id')
         trivy_id=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts | jq --arg BUILD "trivy-${build}" '.artifacts[]|select(.name == $BUILD).id')
         grype_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/${grype_id}"
         trivy_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/${trivy_id}"
         echo "### $build"
-        echo "[$grype_url](${grype_url})"
-        echo "[$trivy_url](${trivy_url})"
+        echo "[Download Grype report for $build](${grype_url})"
+        echo "[Download Trivy report for $build](${trivy_url})"
         echo "| Total | Critical | High | Medium | Fix Available | No Fix Available |"
         echo "|---|---|---|---|---|---|"
         echo "|$build_total|$build_critical|$build_high|$build_medium|$build_fix_available|$build_fix_not_available|"
@@ -74,7 +74,7 @@ render_output() {
 
 {
     echo "_Updated $(date -u '+%Y-%m-%d %H:%M UTC') from the nightly scan of the published images._"
-    echo "There are $total vulnerabilities accross $(echo $builds | wc -l) images."
+    echo "A total of $total vulnerabilities have been detected by trivy and grype on $(wc -w <<< "$builds") images."
     echo
     render_output
     echo
