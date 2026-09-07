@@ -91,7 +91,7 @@ jobs:
           path: artifacts
         continue-on-error: true
 
-      - name: Build summary
+      - name: Generate summary
         id: summary
         run: bash .github/scripts/generate_summary.sh
 

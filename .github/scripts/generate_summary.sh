@@ -76,9 +76,6 @@ render_output() {
 }
 
 {
-    summary_id=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts | jq '.artifacts[]|select(.name == "summary.csv").id')
-    summary_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/${summary_id}"
-    echo "[>>> Download the scan summary here <<<](${summary_url})"
     echo "Issue updated $(date -u '+%Y-%m-%d %H:%M UTC') by nightly scan of published images."
     echo "A total of $total vulnerabilities have been detected by trivy and grype on $(wc -w <<< "$builds") images."
     echo
