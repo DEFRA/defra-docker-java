@@ -2,6 +2,10 @@
 
 total=${{ steps.summary.outputs.total }}
 total_fixable=${{ steps.summary.outputs.total_fixable }}
+summary_id=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts | jq '.artifacts[]|select(.name == "summary.csv").id')
+summary_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/${summary_id}"
+summary_link="## [>> Download scan summary <<](${summary_url})"
+sed -i "1i\\$summary_link" body.md
 
 number=$(gh issue list --label "$LABEL" --state all --limit 1 --json number --jq '.[0].number // empty')
 state=""
