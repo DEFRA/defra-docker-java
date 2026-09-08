@@ -42,11 +42,13 @@ for dir in artifacts/trivy-java-*; do
     ' "$file" >> summary.tsv || true
 done
 
-total=$(cat summary.tsv | wc -l)
-fixable_count=$(cat summary.tsv | grep FIX_AVAILABLE | wc -l)
-builds=$(cat summary.tsv | awk -F'\t' '{print $1}' | sort -u)
-
 tr '\t' ',' < summary.tsv > summary.csv
+
+total=$(cat summary.csv | cut -d, -f2 | egrep "MED|HIGH|CRIT" | wc -l)
+echo "total=$total" >> $GITHUB_OUTPUT
+total_fixable=$(cat summary.csv | grep FIX_AVAILABLE | wc -l)
+echo "total_fixable=$total_fixable" >> $GITHUB_OUTPUT
+builds=$(cat summary.csv | cut -d, -f1 | sort -u)
 
 render_output() {
     file="summary.tsv"
@@ -62,7 +64,7 @@ render_output() {
             trivy_id=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts | jq --arg BUILD "trivy-${build}" '.artifacts[]|select(.name == $BUILD).id')
             grype_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/${grype_id}"
             trivy_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/${trivy_id}"
-            echo "#### $build"
+            echo "### $build"
             echo "[Download Grype report for $build](${grype_url})"
             echo "[Download Trivy report for $build](${trivy_url})"
             echo "| Total | Critical | High | Medium | Fix Available | No Fix Available |"
@@ -82,6 +84,3 @@ render_output() {
     render_output
     echo
 } > body.md
-
-echo "fixable_count=$fixable_count" >> $GITHUB_OUTPUT
-echo "total=$total" >> $GITHUB_OUTPUT
