@@ -62,7 +62,7 @@ render_output() {
             trivy_id=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts | jq --arg BUILD "trivy-${build}" '.artifacts[]|select(.name == $BUILD).id')
             grype_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/${grype_id}"
             trivy_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/${trivy_id}"
-            echo "### $build"
+            echo "#### $build"
             echo "[Download Grype report for $build](${grype_url})"
             echo "[Download Trivy report for $build](${trivy_url})"
             echo "| Total | Critical | High | Medium | Fix Available | No Fix Available |"
