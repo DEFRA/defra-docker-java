@@ -23,6 +23,7 @@ if [ "$total" -eq 0 ]; then
     exit 0
 fi
 
+# If there's no issue create one otherwise update existing
 if [ -z "$number" ]; then
     url=$(gh issue create --title "$TITLE" --label "$LABEL" --body-file body.md)
     number=${url##*/}
@@ -31,7 +32,7 @@ else
     gh issue edit "$number" --body-file body.md
 fi
 
-# Notify only when newly actionable, so an already-open issue updates silently.
+# Notify only when fixes available so an already-open issue updates silently.
 if [ "$fixable" -gt 0 ] && [ "$state" != "OPEN" ]; then
     gh issue reopen "$number" || true
     if [ -n "$REVIEW_TEAM" ]; then

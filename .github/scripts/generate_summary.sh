@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Iterate and summarise Grype output files
 for dir in artifacts/grype-java-*; do
     build=$(echo $dir | sed 's/artifacts\/grype\-//g')
     file="artifacts/grype-${build}/output"
@@ -7,8 +8,7 @@ for dir in artifacts/grype-java-*; do
     [ -e "$file" ] || continue
     jq --arg build "$build" -r '
     (.matches // [])[] |
-    [ 
-        ($build),
+    [ ($build),
         (.vulnerability.severity // "Unknown" | ascii_upcase),
         (.vulnerability.id // ""),
         (.artifact.name // ""),
@@ -16,11 +16,11 @@ for dir in artifacts/grype-java-*; do
         (if (.vulnerability.fix.state // "") == "fixed" then "FIX_AVAILABLE" else "FIX_NOT_AVAILABLE" end),
         ((.vulnerability.fix.versions // []) | join(",")),
         ((.artifact.locations // []) | map(.path) | join(",")),
-        ("grype")
-    ] | @tsv
+        ("grype")] | @tsv
     ' "$file" >> summary.tsv || true
 done
 
+# Iterate and summarise Trivy output files
 for dir in artifacts/trivy-java-*; do
     build=$(echo $dir | sed 's/artifacts\/trivy\-//g')
     file="artifacts/trivy-${build}/trivy-${build}.json"
@@ -28,8 +28,7 @@ for dir in artifacts/trivy-java-*; do
     [ -e "$file" ] || continue
     jq --arg build "$build" -r '
     (.Results // [])[] | . as $result | ($result.Vulnerabilities // [])[] |
-    [ 
-        ($build),
+    [ ($build),
         (.Severity // "UNKNOWN" | ascii_upcase),
         (.VulnerabilityID // ""),
         (.PkgName // ""),
@@ -37,19 +36,21 @@ for dir in artifacts/trivy-java-*; do
         (if (.FixedVersion // "") != "" then "FIX_AVAILABLE" else "FIX_NOT_AVAILABLE" end),
         (.FixedVersion // ""),
         (($result.Target // "") + "," + (.PkgPath // "")),
-        ("trivy")
-    ] | @tsv
+        ("trivy")] | @tsv
     ' "$file" >> summary.tsv || true
 done
 
+# Create a CSV for export
 tr '\t' ',' < summary.tsv > summary.csv
 
+# Total is determined to be MEDIUM+
 total=$(cat summary.csv | cut -d, -f2 | egrep "MED|HIGH|CRIT" | wc -l)
 echo "total=$total" >> $GITHUB_OUTPUT
 total_fixable=$(cat summary.csv | grep FIX_AVAILABLE | wc -l)
 echo "total_fixable=$total_fixable" >> $GITHUB_OUTPUT
 builds=$(cat summary.csv | cut -d, -f1 | sort -u)
 
+# Generate tabluated output for Issue description
 render_output() {
     file="summary.tsv"
     if [ -s "$file" ]; then
