@@ -44,7 +44,7 @@ done
 tr '\t' ',' < summary.tsv > summary.csv
 
 # Total is determined to be MEDIUM+
-total=$(cat summary.csv | cut -d, -f2 | egrep "MED|HIGH|CRIT" | wc -l)
+total=$(cat summary.csv | cut -d, -f2 | egrep "MED|HIGH|CRITICAL" | wc -l)
 echo "total=$total" >> $GITHUB_OUTPUT
 total_fixable=$(cat summary.csv | grep FIX_AVAILABLE | wc -l)
 echo "total_fixable=$total_fixable" >> $GITHUB_OUTPUT
@@ -56,11 +56,11 @@ render_output() {
     if [ -s "$file" ]; then
         for build in $builds; do
             build_total=$(grep $build $file | wc -l)
-            build_critical=$(grep $build $file | grep CRITICAL | wc -l)
-            build_high=$(grep $build $file | grep HIGH | wc -l)
-            build_medium=$(grep $build $file | grep MEDIUM | wc -l)
-            build_fix_available=$(grep $build $file | grep FIX_AVAILABLE | wc -l)
-            build_fix_not_available=$(grep $build $file | grep FIX_NOT_AVAILABLE | wc -l)
+            build_critical=$(grep $build $file | cut -d'\t' -f2 | grep CRITICAL | wc -l)
+            build_high=$(grep $build $file | cut -d'\t' -f2 | grep HIGH | wc -l)
+            build_medium=$(grep $build $file | cut -d'\t' -f2 | grep MEDIUM | wc -l)
+            build_fix_available=$(grep $build $file | cut -d'\t' -f6 | grep FIX_AVAILABLE | wc -l)
+            build_fix_not_available=$(grep $build $file | cut -d'\t' -f6 | grep FIX_NOT_AVAILABLE | wc -l)
             grype_id=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts | jq --arg BUILD "grype-${build}" '.artifacts[]|select(.name == $BUILD).id')
             trivy_id=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts | jq --arg BUILD "trivy-${build}" '.artifacts[]|select(.name == $BUILD).id')
             grype_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/${grype_id}"
