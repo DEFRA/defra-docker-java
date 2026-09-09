@@ -59,8 +59,8 @@ render_output() {
             build_critical=$(grep $build $file |  cut -f2 -d$'\t' | grep CRITICAL | wc -l)
             build_high=$(grep $build $file |  cut -f2 -d$'\t' | grep HIGH | wc -l)
             build_medium=$(grep $build $file |  cut -f2 -d$'\t' | grep MEDIUM | wc -l)
-            build_fix_available=$(grep $build $file |  cut -f2 -d$'\t' | grep FIX_AVAILABLE | wc -l)
-            build_fix_not_available=$(grep $build $file |  cut -f2 -d$'\t' | grep FIX_NOT_AVAILABLE | wc -l)
+            build_fix_available=$(grep $build $file |  cut -f6 -d$'\t' | grep FIX_AVAILABLE | wc -l)
+            build_fix_not_available=$(grep $build $file |  cut -f6 -d$'\t' | grep FIX_NOT_AVAILABLE | wc -l)
             grype_id=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts | jq --arg BUILD "grype-${build}" '.artifacts[]|select(.name == $BUILD).id')
             trivy_id=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts | jq --arg BUILD "trivy-${build}" '.artifacts[]|select(.name == $BUILD).id')
             grype_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/${grype_id}"
