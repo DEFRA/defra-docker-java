@@ -84,3 +84,7 @@ grype defra-java:latest --fail-on medium -o json > report.json
 **Note:** the configuration file is in the default location so does not need specifying on the command line.
 
 Full documentation on `grype`` be found at https://github.com/anchore/grype
+
+## GitHub Issues
+
+The nightly scan [pipeline](.github/workflows/nightly-scan.yml) will create (or update an existing) GitHub Issue to summarise the findings - if there are "fixable" vulnerabilities (i.e. addressed in more recent package builds) of a MEDIUM, HIGH or CRITICAL severity. Where the PR is re-opened a comment will be added tagging the [PR_REVIEW-TEAM](https://github.com/DEFRA/defra-docker-java/settings/variables/actions) (currently [adp-platform-devops](https://github.com/orgs/DEFRA/teams/adp-platform-devops)). The issue will include links to the generated summary along with the incumbant grype and trivy artifacts. 
