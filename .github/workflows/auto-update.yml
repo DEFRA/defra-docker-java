@@ -6,12 +6,11 @@ permissions:
 
 on:
     schedule:
-      - cron: '15 10 * * *'
+      - cron: '0 2 * * *'
     workflow_dispatch:
     push:
       branches:
         - main
-        - feature/PL-1570
 
 jobs:
   check-and-update:
@@ -217,6 +216,7 @@ jobs:
 
             pull_request_title="Update Java base image: ${updated_versions}"
             pull_request_body=$(cat updates.txt | awk -F: '{printf "- %s: %s\n", $1, $5}')
+            #pull_request_branch="update-java-base-image-${updated_versions//,/}"
             datestamp=$(date '+%H%M%S-%d%m%y')
             pull_request_branch="update-java-base-image-${datestamp}"
 
